@@ -1,6 +1,10 @@
 package dictionary
 
 import (
+	"errors"
+	"io/ioutil"
+	"math/rand"
+	"os"
 	"strings"
 
 	"github.com/baribari2/pulp-calculator/common/types"
@@ -136,19 +140,24 @@ func CountCorrectWords(cfg *types.Config, msg string) (int, error) {
 
 // Counts and returns both words in the common word map, and words in the english dictionary
 func CountCorrectAndCommonWords(cfg *types.Config, msg string) (correctWords, commonWords int, err error) {
+	t := strings.ReplaceAll(msg, " ", "")
+	if len(t) < 80 {
+		return 0, 0, errors.New("Content too short (expected at least 100 characters)")
+	}
+
 	for _, word := range strings.Split(msg, " ") {
 		// Clean the word in preparation for the query
 		word := FilterPunctuation(word)
 
 		// Clean the word in preparation for the query
-		def, err := cfg.DictServer.Define("!", word)
-		if err != nil {
-			return 0, 0, err
-		}
+		// def, err := cfg.DictServer.Define("!", word)
+		// if err != nil {
+		// 	return 0, 0, err
+		// }
 
-		if len(def) > 0 {
-			correctWords++
-		}
+		// if len(def) > 0 {
+		// 	correctWords++
+		// }
 
 		// Check if the word exits in the common word map
 		if _, exists := COMMON_WORDS[word]; exists {
@@ -157,6 +166,29 @@ func CountCorrectAndCommonWords(cfg *types.Config, msg string) (correctWords, co
 	}
 
 	return correctWords, commonWords, nil
+}
+
+func Gibber(length int) (string, error) {
+	f, err := os.Open("./american-english.txt")
+	if err != nil {
+		return "", err
+	}
+
+	defer f.Close()
+
+	bytes, err := ioutil.ReadAll(f)
+	if err != nil {
+		return "", err
+	}
+
+	var words []string = strings.Split(string(bytes), "\n")
+
+	gibber := ""
+	for i := 0; i < length; i++ {
+		gibber += words[rand.Intn(len(words))] + " "
+	}
+
+	return gibber, nil
 }
 
 // Filters out punctuation from a string

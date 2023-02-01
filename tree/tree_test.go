@@ -1,85 +1,110 @@
 package tree
 
 import (
+	"math/rand"
 	"testing"
 
 	"github.com/baribari2/pulp-calculator/common/types"
-	"github.com/baribari2/pulp-calculator/tree/util"
 )
 
 func TestTree(t *testing.T) {
-	_ = &Tree{
+	cfg := initConfig()
+	tree, err := setupPulpTree()
+	if err != nil {
+		t.Errorf("Failed to setup tree: %v", err.Error())
+	}
+
+	score, err := Calculate(cfg, tree.Root)
+	if err != nil {
+		t.Errorf("Failed to calculate score: %v", err.Error())
+	}
+
+	t.Logf("Pulp Thread Score: %v", score)
+}
+
+func TestViralTree(t *testing.T) {
+	cfg := initConfig()
+	tree, err := setupViralPulpTree()
+	if err != nil {
+		t.Errorf("Failed to setup tree: %v", err.Error())
+	}
+
+	score, err := Calculate(cfg, tree.Root)
+	if err != nil {
+		t.Errorf("Failed to calculate score: %v", err.Error())
+	}
+
+	t.Logf("Viral Thread Score: %v", score)
+}
+
+func TestSingleComment(t *testing.T) {
+	cfg := initConfig()
+	tree := &Tree{
 		Root: &types.Node{
-			Id:         0,
-			Confidence: 75,
+			Id:         1,
+			Confidence: 63,
 			Score:      0,
-			Content:    "I think everyone needs a therapist",
-			Action:     types.CommentResponse,
+			Action:     types.CommentReply,
+			Content:    "This is a comment that should meet the minimun character count, because it's longggggggggggggggggggggg",
 			Engagements: types.Engagements{
-				Votes: util.FillAllVotes(33, 20, 2),
-			},
-		},
-		Nodes: map[int]*types.Node{
-			1: &types.Node{
-				Id:         1,
-				Confidence: 63,
-				Score:      0,
-				Content:    "I disagree with you, I think everyone has their own way of dealing with their problems",
-				Action:     types.CommentReply,
-				Engagements: types.Engagements{
-					Votes: util.FillAllVotes(77, 13, 0),
-				},
-			},
-			2: &types.Node{
-				Id:         1,
-				Confidence: 63,
-				Score:      0,
-				Content:    "I disagree with you, I think everyone has their own way of dealing with their problems",
-				Action:     types.CommentReply,
-				Engagements: types.Engagements{
-					Votes: util.FillAllVotes(77, 13, 0),
-				},
-			},
-			3: &types.Node{
-				Id:         1,
-				Confidence: 63,
-				Score:      0,
-				Content:    "I disagree with you, I think everyone has their own way of dealing with their problems",
-				Action:     types.CommentReply,
-				Engagements: types.Engagements{
-					Votes: util.FillAllVotes(77, 13, 0),
-				},
-			},
-			4: &types.Node{
-				Id:         1,
-				Confidence: 63,
-				Score:      0,
-				Content:    "I disagree with you, I think everyone has their own way of dealing with their problems",
-				Action:     types.CommentReply,
-				Engagements: types.Engagements{
-					Votes: util.FillAllVotes(77, 13, 0),
-				},
-			},
-			5: &types.Node{
-				Id:         1,
-				Confidence: 63,
-				Score:      0,
-				Content:    "I disagree with you, I think everyone has their own way of dealing with their problems",
-				Action:     types.CommentReply,
-				Engagements: types.Engagements{
-					Votes: util.FillAllVotes(77, 13, 0),
-				},
-			},
-			6: &types.Node{
-				Id:         1,
-				Confidence: 63,
-				Score:      0,
-				Content:    "I disagree with you, I think everyone has their own way of dealing with their problems",
-				Action:     types.CommentReply,
-				Engagements: types.Engagements{
-					Votes: util.FillAllVotes(77, 13, 0),
-				},
+				Votes: FillAllVotes(100, 10, 5),
 			},
 		},
 	}
+
+	score, err := Calculate(cfg, tree.Root)
+	if err != nil {
+		t.Errorf("Failed to calculate comment: %v", err.Error())
+	}
+
+	t.Logf("Single Comment Score: %v", score)
+}
+
+func TestRandomSingleComment(t *testing.T) {
+	cfg := initConfig()
+	tree := &Tree{
+		Root: &types.Node{
+			Id:         1,
+			Confidence: rand.Float64(),
+			Score:      0,
+			Action:     types.CommentReply,
+			Content:    "This is a comment that should meet the minimun character count, because it's longggggggggggggggggggggg",
+			Engagements: types.Engagements{
+				Votes: FillAllVotes(100, 10, 5),
+			},
+		},
+	}
+
+	score, err := Calculate(cfg, tree.Root)
+	if err != nil {
+		t.Errorf("Failed to calculate comment: %v", err.Error())
+	}
+
+	t.Logf("Single Comment Score: %v", score)
+}
+
+func TestSingleShortComment(t *testing.T) {
+	cfg := initConfig()
+	tree := &Tree{
+		Root: &types.Node{
+			Id:         1,
+			Confidence: 63,
+			Score:      0,
+			Action:     types.CommentReply,
+			Content:    "This is a comment that shouldn't meet the minimun character count",
+			Engagements: types.Engagements{
+				Votes: FillAllVotes(33, 20, 2),
+			},
+		},
+	}
+
+	score, err := Calculate(cfg, tree.Root)
+	if err != nil {
+		t.Errorf("Failed to calculate comment: %v", err.Error())
+	}
+
+	if score != 0 {
+		t.Errorf("Single Short Comment Score: %v", score)
+	}
+
 }

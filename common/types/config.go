@@ -10,6 +10,8 @@ type Config struct {
 	TwitterAccessKey    string
 	TwitterAccessSecret string
 	TwitterAccessToken  string
+	TwitterApiKey       string
+	TwitterApiSecret    string
 	TwitterBearerToken  string
 	DictServer          *dict.Client
 }

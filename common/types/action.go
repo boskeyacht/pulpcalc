@@ -19,21 +19,21 @@ const (
 func (a Action) BasePoints() int64 {
 	switch a {
 	case CommentResponse:
-		return 20
+		return 10
 	case CommentReply:
-		return 16
+		return 8
 	case ValidVote:
-		return 7
+		return 4
 	case InvalidVote:
-		return 7
+		return 4
 	case AbstainVote:
 		return 0
 	case ValidVoteWithContent:
-		return 10
+		return 5
 	case InvalidVoteWithContent:
-		return 10
+		return 5
 	case TrustedReference:
-		return 6
+		return 3
 	case DistrustedReference:
 		return 0
 	default:

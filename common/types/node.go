@@ -30,6 +30,8 @@ type Node struct {
 	// This will ultimately be multimedia content
 	Content string
 
+	Timestamp int64
+
 	Action
 
 	Exposure
@@ -55,4 +57,8 @@ func (n *Node) GetParentId() int {
 // Reutrns the Id of this node
 func (n *Node) GetId() int {
 	return n.Id
+}
+
+func (n *Node) GetTimestamp() int64 {
+	return n.Timestamp
 }

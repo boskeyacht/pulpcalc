@@ -19,7 +19,8 @@ func AppOnlyRequest(cfg *types.Config) error {
 
 	res, err := qst.Post(
 		"https://www.reddit.com/api/v1/access_token",
-		// qst.QueryValue("grant_type", "client_credentials"),
+		qst.QueryValue("grant_type", "client_credentials"),
+		qst.QueryValue("device_id", id),
 		qst.BodyJSON(map[string]string{
 			"grant_type": "client_credentials",
 			// "device_id":  id,

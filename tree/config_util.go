@@ -1,4 +1,4 @@
-package main
+package tree
 
 import (
 	"log"
@@ -34,7 +34,7 @@ func getOptionalEnv(e string) string {
 }
 
 func initConfig() *types.Config {
-	godotenv.Load()
+	godotenv.Load("../.env")
 
 	RedditSecretKey = getEnv("REDDIT_SECRET_KEY")
 	TwitterAccessKey = getEnv("TWITTER_ACCESS_KEY")

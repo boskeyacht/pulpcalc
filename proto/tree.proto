@@ -1,0 +1,52 @@
+syntax = "proto3";
+package proto;
+
+option go_package = "./proto";
+
+service CalcTree {
+    rpc GetCalcTree (CalcTreeRequest) returns (CalcTreeResponse) {}
+}
+
+enum Vote {
+    ValidVoteType = 0;
+    InvalidVoteType = 1;
+    AbstainVoteType = 2;
+}
+
+message Exposure {
+    int64 time = 1;
+    int64 impressions = 2;
+    int64 revisits = 3;
+}
+
+message Engagements {
+    repeated Vote votes = 1;
+}
+
+message Node {
+    int64 id = 1;
+    int64 parent_id = 2;
+    float confidence = 3;
+    int64 score = 4;
+    int64 last_score = 5;
+    int64 inactive_count = 6;
+    repeated Node children = 7;
+    string content = 8;
+    int64 timestamp = 9;
+    int64 action = 10;
+    Exposure exposure = 11;
+    Engagements engagements = 12;
+
+}
+
+message CalcTreeRequest {
+    int32 value = 1;
+}
+
+message CalcTreeResponse {
+    Node root = 1;
+    repeated int64 timestamps = 2;
+    int64 last_score = 3;
+    int64 inactive_count = 4;
+    repeated Node nodes = 5;
+}

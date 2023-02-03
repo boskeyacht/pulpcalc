@@ -14,18 +14,22 @@ import (
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/opts"
 	"github.com/rodaine/table"
-	// "github.com/baribari2/pulp-calculator/randtick"
 )
 
-// TODO: Decay for comment replies
-// TODO: Return error msgs instead of 0's
 type Tree struct {
 
 	// The root of the tree
-	Root *types.Node
+	Root *types.Node `json:"root"`
+
+	Timestamps []int64 `json:"timestamps"`
+
+	LastScore int64 `json:"last_score"`
+
+	// for every time a score change eqauls zero, increase the constant in the log is mult. by
+	InactiveCount int64 `json:"inactive_count"`
 
 	// Map node Id to its children
-	Nodes map[int]*types.Node
+	Nodes map[int]*types.Node `json:"nodes"`
 
 	sync.Mutex
 }
@@ -158,7 +162,7 @@ func CalculateScore(cfg *types.Config, node *types.Node) (int, error) {
 // The lower the number the higher the frequency of comments.
 //
 // TODO: Return errors
-func SimulateThread(cfg *types.Config, line *charts.Line, tick time.Duration, endTime time.Duration, freq int64) (table.Table, table.Table) {
+func SimulateThread(cfg *types.Config, line *charts.Line, tick time.Duration, endTime time.Duration, freq int64) (*Tree, table.Table, table.Table, error) {
 	tree := &Tree{}
 	tree.Nodes = make(map[int]*types.Node)
 	ticker := time.NewTicker(tick)
@@ -166,12 +170,12 @@ func SimulateThread(cfg *types.Config, line *charts.Line, tick time.Duration, en
 	ttable := table.New("Id", "Score", "Time")
 	data := []opts.LineData{}
 	stop := make(chan bool)
-	// tr := randtick.NewRandTickN(2)
+	// ticker := randtick.NewRandTickN(2)
 
 	tc, err := dict.Gibber(25)
 	if err != nil {
 		log.Println(err)
-		return nil, nil
+		return nil, nil, nil, err
 	}
 
 	// Create the root node
@@ -191,60 +195,97 @@ func SimulateThread(cfg *types.Config, line *charts.Line, tick time.Duration, en
 		Children: []*types.Node{},
 	}
 
+	score, err := CalculateScore(cfg, tree.Root)
+	if err != nil {
+		log.Println(err)
+		return nil, nil, nil, err
+	}
+
+	tree.Root.Score = int64(score)
+
 	// The main simulation goroutine
 	go func() {
 		// Adds comments until the ticker runs out
 		for {
 			select {
 			case <-ticker.C:
+				tree.Timestamps = append(tree.Timestamps, time.Now().Unix())
 
-				// Generate content for the node
-				m, err := dict.Gibber(25)
-				if err != nil {
-					return
+				// After five seconds stop increasing the score of the root node
+				if time.Now().Unix()-tree.Timestamps[0] > 7 {
+					// If the score hasn't changed...
+					if tree.Root.Score == tree.Root.Score {
+						tree.InactiveCount++
+
+						d := CalculateDecay(int(tree.InactiveCount))
+						if d != 0 {
+							tree.Root.Score = int64(float64(tree.Root.Score) * d)
+						}
+
+					} else {
+						tree.Root.Score = int64(score)
+						tree.Root.Timestamp = time.Now().Unix()
+					}
+				} else {
+
+					// Generate content for the node
+					m, err := dict.Gibber(25)
+					if err != nil {
+						return
+					}
+
+					// Create a new node
+					node := &types.Node{
+						Id:         len(tree.Root.Children) + 1,
+						Action:     types.CommentResponse,
+						Content:    m,
+						Confidence: rand.Float64(),
+						ParentId:   tree.Root.Id,
+						Engagements: types.Engagements{
+							Votes: FillAllVotes(rand.Intn(1000), rand.Intn(1000), rand.Intn(1000)),
+						},
+						Children: []*types.Node{},
+					}
+
+					// Calculates the score of the node
+					score, err := Calculate(cfg, node)
+					if err != nil {
+						log.Println(err)
+
+						return
+					}
+
+					// data = append(data, opts.LineData{Value: score})
+					node.Score = int64(score)
+					node.Timestamp = time.Now().Unix()
+
+					// Add the node to the tree
+					// tree.InsertNode(node)
+
+					tree.Root.Children = append(tree.Root.Children, node)
+
+					// Calculate the score of the thread
+					score, err = Calculate(cfg, tree.Root)
+					if err != nil {
+						log.Println(err)
+
+						return
+					}
+
+					// Calculate the change in score and increment the counter if the change is zero
+					if int64(score) == tree.Root.Score {
+						tree.InactiveCount++
+
+						d := CalculateDecay(int(tree.InactiveCount))
+						score = int(float64(score) * d)
+
+					} else {
+						tree.Root.Score = int64(score)
+						tree.Root.Timestamp = time.Now().Unix()
+					}
 				}
 
-				// Create a new node
-				node := &types.Node{
-					Id:         len(tree.Root.Children) + 1,
-					Action:     types.CommentResponse,
-					Content:    m,
-					Confidence: rand.Float64(),
-					ParentId:   tree.Root.Id,
-					Engagements: types.Engagements{
-						Votes: FillAllVotes(rand.Intn(1000), rand.Intn(1000), rand.Intn(1000)),
-					},
-					Children: []*types.Node{},
-				}
-
-				// Calculates the score of the node
-				score, err := Calculate(cfg, node)
-				if err != nil {
-					log.Println(err)
-
-					return
-				}
-
-				// data = append(data, opts.LineData{Value: score})
-				node.Score = int64(score)
-				node.Timestamp = time.Now().Unix()
-
-				// Add the node to the tree
-				// tree.InsertNode(node)
-
-				tree.Root.Children = append(tree.Root.Children, node)
-
-				// Calculate the score of the thread
-				score, err = Calculate(cfg, tree.Root)
-				if err != nil {
-					log.Println(err)
-
-					return
-				}
-
-				data = append(data, opts.LineData{Value: score})
-				tree.Root.Score = int64(score)
-				tree.Root.Timestamp = time.Now().Unix()
+				data = append(data, opts.LineData{Value: tree.Root.Score})
 
 				// Add the row to the table
 				ttable.AddRow(tree.Root.Id, tree.Root.Score, tree.Root.Timestamp)
@@ -256,7 +297,7 @@ func SimulateThread(cfg *types.Config, line *charts.Line, tick time.Duration, en
 	}()
 
 	// Calculate the score of the thread one last time
-	score, err := Calculate(cfg, tree.Root)
+	score, err = Calculate(cfg, tree.Root)
 	if err != nil {
 		log.Println(err)
 	}
@@ -293,5 +334,5 @@ func SimulateThread(cfg *types.Config, line *charts.Line, tick time.Duration, en
 		AddSeries("thread score", data).
 		SetSeriesOptions(charts.WithLineChartOpts(opts.LineChart{Smooth: true}))
 
-	return ctable, ttable
+	return tree, ctable, ttable, nil
 }

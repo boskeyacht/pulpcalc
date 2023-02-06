@@ -140,7 +140,7 @@ func CalculateScore(cfg *types.Config, node *types.Node) (int, error) {
 			score += int(types.ValidVote.BasePoints())
 
 		case types.InvalidVoteType:
-			score += int(types.InvalidVote.BasePoints())
+			score -= int(types.InvalidVote.BasePoints())
 
 		case types.AbstainVoteType:
 			score += int(types.AbstainVote.BasePoints())

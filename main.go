@@ -7,7 +7,6 @@ import (
 	"golang.org/x/net/dict"
 )
 
-// TODO: make votes a function of impressions
 func main() {
 	cfg := initConfig()
 

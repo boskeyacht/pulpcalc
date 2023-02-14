@@ -1,4 +1,4 @@
-# Pulp Calculator
+# Pulp Calculator (WIP)
 This pulp calculator project is a framework for not only simulating interaction on a social-media thread over time but scoring the thread as well. Simply put, a thread is a tree of interactions, with the root often being a comment; Said interactions vary from platform to platform, but generally speaking, all platforms allow the opportunity to vote on and leave comments under threads. Pulp takes the idea of interaction further by introducing interactions that create the opportunity for more granular engagement, including valid votes, invalid votes, abstain votes, comments, comment replies, and references. This repository aims to:
 - Simulate possible engagement scenarios
 - Visualize the score of threads, and their change over time
@@ -6,7 +6,7 @@ This pulp calculator project is a framework for not only simulating interaction 
 
 More here....
 
-### How does it work?
+# How does it work?
 Threads are represented as n-ary trees, where the children of the root node are the actions/engagements that the root node generated, each possibly containing its own set of children for any engagements it may have generated. A recursive DFS algorithm was then implemented to traverse the tree, calculating the score of both the children and the tree's root. The calculation for the thread score (root node) is a sum of all its children's scores - which means we can look at the calculation of a single node to understand the calculation of a thread.
 
 Each action has a base score value, the values of which can be seen below. These values represent score
@@ -95,11 +95,15 @@ func CalculateScore(cfg *types.Config, node *types.Node) (int, error) {
 
 The thread simulation feature will simulate a thread over a specified time interval by randomly generating new actions, which contain content that too, is random.
 
-### Usage
+# Installation
+- Clone this repository
+- Execute the command `go build`
+- Navigate to the [client](./client/) folder and execute the command `npm install`
+
+# Usage
 You can use the pulp calculator as a CLI tool, or you can start a REST api server along with the [front-end](./client/)(WIP)
 
-###### CLI Usage
------------------------------------------------------------
+## CLI Usage
 ```
     pulpcalc is a tool for calculating the score of a thread over time
 
@@ -116,20 +120,30 @@ You can use the pulp calculator as a CLI tool, or you can start a REST api serve
     -h, --help   help for pulpcalc
 ```
 
-###### Api/Front-end Usage
------------------------------------------------------------
+## Api/Front-end Usage
 - Start the server using the `serve` command seen above
 - Navigate to the [client](./client/) folder and execute the command `npm run dev`
 
-### Examples
+# Examples
+The sim command,
+`$ pulpcalc sim --tick 1 --len 15 --freq 1`
 
-### Installation
-- Clone this repository
-- Execute the command `go build`
-- Navigate to the [client](./client/) folder and execute the command `npm install`
+Will out put these tables, the comment table showing the generated nodes, and the time table showing
+the score of the thread over time.
 
-### API Keys
+![thread score tables](./assets/calcput.jpg)
+
+It will also output this graph,
+
+![thread score graph](./assets/chartput.jpg)
+
+# API Keys
 - [Reddit](https://github.com/reddit-archive/reddit/wiki/OAuth2)
 - [Twitter](https://developer.twitter.com/en/docs/authentication/oauth-2-0)
 
-### TODO
+# TODO
+- [ ] Make votes a function of impressions
+- [ ] Include references in scoring
+- [ ] Add hide & report actions
+    - And include in scoring
+- [ ] FE visualizations

@@ -97,12 +97,6 @@ func Calculate(cfg *types.Config /*tree *Tree,*/, node *types.Node) (int, error)
 }
 
 // Calculates the score of a node, based on its action, content, vote, and confidence.
-//
-// TODO: Check underflow
-// TODO: Can votes generate content?
-// TODO: Vote:Confidence ratio?
-// TODO: Measure strength through words
-// TODO: References
 func CalculateScore(cfg *types.Config, node *types.Node) (int, error) {
 	// Set the score equal to the base points of the action
 	var score int = int(node.Action.BasePoints())
@@ -140,7 +134,7 @@ func CalculateScore(cfg *types.Config, node *types.Node) (int, error) {
 			score += int(types.ValidVote.BasePoints())
 
 		case types.InvalidVoteType:
-			score -= int(types.InvalidVote.BasePoints())
+			score += int(types.InvalidVote.BasePoints())
 
 		case types.AbstainVoteType:
 			score += int(types.AbstainVote.BasePoints())
@@ -160,8 +154,6 @@ func CalculateScore(cfg *types.Config, node *types.Node) (int, error) {
 
 // Simulate a thread until the given end time, with the given frequency.
 // The lower the number the higher the frequency of comments.
-//
-// TODO: Return errors
 func SimulateThread(cfg *types.Config, line *charts.Line, tick time.Duration, endTime time.Duration, freq int64) (*Tree, table.Table, table.Table, error) {
 	tree := &Tree{}
 	tree.Nodes = make(map[int]*types.Node)

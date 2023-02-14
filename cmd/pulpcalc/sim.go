@@ -11,8 +11,6 @@ import (
 	"github.com/baribari2/pulp-calculator/sidecar"
 	"github.com/baribari2/pulp-calculator/tree"
 	"github.com/briandowns/spinner"
-
-	// "github.com/briandowns/spinner"
 	"github.com/fatih/color"
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/opts"
@@ -31,8 +29,8 @@ var simCmd = &cobra.Command{
 	Long:    `Simulate a thread over time, given a starting tick, end tick, and frequency`,
 	Aliases: []string{"s"},
 	Run: func(cmd *cobra.Command, args []string) {
-		tick := time.Duration(tick)
-		len := time.Duration(len)
+		tick := time.Duration(time.Duration(tick) * time.Second)
+		len := time.Duration(time.Duration(len) * time.Second)
 		spinner := spinner.New(spinner.CharSets[35], 100*time.Millisecond, spinner.WithColor("green"))
 		spinner.Suffix = " Simulating thread...\n\n"
 

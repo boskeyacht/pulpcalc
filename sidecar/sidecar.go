@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc"
 )
 
+// Sidecar is a gRPC server that serves the tree
 type Sidecar struct {
 	proto.CalcTreeServer
 	Server    *grpc.Server
@@ -48,8 +49,8 @@ func (s *Sidecar) GetCalcTree(ctx context.Context, req *proto.CalcTreeRequest) (
 
 	for i, c := range s.Tree.Root.Children {
 		children[i] = &proto.Node{
-			Id:            int64(c.Id),
-			ParentId:      int64(c.ParentId),
+			// Id:            int64(c.Id),
+			// ParentId:      int64(c.ParentId),
 			Confidence:    float32(c.Confidence),
 			Score:         c.Score,
 			LastScore:     c.LastScore,
@@ -60,8 +61,8 @@ func (s *Sidecar) GetCalcTree(ctx context.Context, req *proto.CalcTreeRequest) (
 
 	return &proto.CalcTreeResponse{
 		Root: &proto.Node{
-			Id:            int64(s.Tree.Root.Id),
-			ParentId:      int64(s.Tree.Root.ParentId),
+			// Id:            int64(s.Tree.Root.Id),
+			// ParentId:      int64(s.Tree.Root.ParentId),
 			Confidence:    float32(s.Tree.Root.Confidence),
 			Score:         s.Tree.Root.Score,
 			LastScore:     s.Tree.Root.LastScore,

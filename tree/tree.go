@@ -11,12 +11,16 @@ import (
 
 	"github.com/baribari2/pulp-calculator/common/types"
 	dict "github.com/baribari2/pulp-calculator/dictionary"
+	neo "github.com/baribari2/pulp-calculator/neo4j"
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/opts"
 	"github.com/rodaine/table"
 )
 
+// TODO: Keep track of comment decay when user changes mind
 type Tree struct {
+	// The Id of the tree
+	Id string `json:"id"`
 
 	// The root of the tree
 	Root *types.Node `json:"root"`
@@ -25,11 +29,38 @@ type Tree struct {
 
 	LastScore int64 `json:"last_score"`
 
-	// for every time a score change eqauls zero, increase the constant in the log is mult. by
+	// For every time a score change eqauls zero, increase the constant in the log is mult. by
 	InactiveCount int64 `json:"inactive_count"`
 
 	// Map node Id to its children
-	Nodes map[int]*types.Node `json:"nodes"`
+	Nodes map[string]*types.Node `json:"nodes"`
+
+	// The topic of the debate
+	Topic string `json:"topic"`
+
+	// The category of the debate
+	Category string `json:"category"`
+
+	// The number of participants in the debate
+	RegisteredSpeakers int64 `json:"registered_speakers"`
+
+	// The number of participants in the debate
+	SupportingAudience int64 `json:"supporting_audience"`
+
+	// The number of participants in the debate
+	Commenters int64 `json:"commenters"`
+
+	// The number of voters in the debate
+	Voters int64 `json:"voters"`
+
+	// The number of inactive participants in the debate
+	InactiveParticipants int64 `json:"inactive_participants"`
+
+	// The number of comments in the debate
+	Comments int64 `json:"comments"`
+
+	// The duration of the debate
+	Duration int64 `json:"duration"`
 
 	sync.Mutex
 }
@@ -39,12 +70,12 @@ func (t *Tree) InsertNode(node *types.Node) {
 	defer t.Unlock()
 
 	if t.Nodes == nil {
-		t.Nodes = make(map[int]*types.Node)
+		t.Nodes = make(map[string]*types.Node)
 	}
 
-	t.Nodes[len(t.Nodes)] = node
+	t.Nodes[string(len(t.Nodes))] = node
 
-	if node.ParentId == 0 {
+	if node.ParentId == "" {
 		t.Root = node
 		return
 	}
@@ -154,144 +185,68 @@ func CalculateScore(cfg *types.Config, node *types.Node) (int, error) {
 
 // Simulate a thread until the given end time, with the given frequency.
 // The lower the number the higher the frequency of comments.
-func SimulateThread(cfg *types.Config, line *charts.Line, tick time.Duration, endTime time.Duration, freq int64) (*Tree, table.Table, table.Table, error) {
+func SimulateThread(cfg *types.Config, line *charts.Line, users int64, tick time.Duration, endTime time.Duration, freq int64) (*Tree, table.Table, table.Table, error) {
+	// ticker := randtick.NewRandTickN(2)
 	tree := &Tree{}
-	tree.Nodes = make(map[int]*types.Node)
+	tree.Nodes = make(map[string]*types.Node)
 	ticker := time.NewTicker(tick)
 	ctable := table.New("Id", "Action", "Content", "Confidence", "Votes", "Time", "Score")
 	ttable := table.New("Id", "Score", "Time")
 	data := []opts.LineData{}
 	stop := make(chan bool)
-	// ticker := randtick.NewRandTickN(2)
+	// Creates a new tree for insertion into neo4j
+	t := neo.NewTree()
+	tx, err := t.Create()
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	res, err := cfg.Neo4j.WriteTransaction(tx)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	fmt.Printf("RES: %v", res)
 
 	tc, err := dict.Gibber(25)
 	if err != nil {
-		log.Println(err)
 		return nil, nil, nil, err
 	}
 
 	// Create the root node
 	tree.Root = &types.Node{
-		Id:         1,
+		Id:         t.Id,
 		Action:     types.CommentResponse,
 		Content:    tc,
 		Confidence: rand.Float64(),
 		Timestamp:  time.Now().Unix(),
 		Engagements: types.Engagements{
-			Votes: []types.VoteType{
-				types.ValidVoteType,
-				types.InvalidVoteType,
-				types.AbstainVoteType,
-			},
+			Votes: FillAllVotes(rand.Intn(1000), rand.Intn(1000), rand.Intn(1000)),
 		},
 		Children: []*types.Node{},
 	}
 
+	tree.Voters = int64(len(tree.Root.Engagements.Votes))
+
 	score, err := CalculateScore(cfg, tree.Root)
 	if err != nil {
-		log.Println(err)
 		return nil, nil, nil, err
 	}
 
 	tree.Root.Score = int64(score)
 
 	// The main simulation goroutine
-	go func() {
-		// Adds comments until the ticker runs out
-		for {
-			select {
-			case <-ticker.C:
-				tree.Timestamps = append(tree.Timestamps, time.Now().Unix())
+	score, err = run(cfg, score, tree, ticker, tick, ttable, data, stop)
+	if err != nil {
+		return nil, nil, nil, err
+	}
 
-				// After five seconds stop increasing the score of the root node
-				if time.Now().Unix()-tree.Timestamps[0] > 7 {
-					// If the score hasn't changed...
-					if tree.Root.Score == tree.Root.Score {
-						tree.InactiveCount++
-
-						d := CalculateDecay(int(tree.InactiveCount))
-						if d != 0 {
-							tree.Root.Score = int64(float64(tree.Root.Score) * d)
-						}
-
-					} else {
-						tree.Root.Score = int64(score)
-						tree.Root.Timestamp = time.Now().Unix()
-					}
-				} else {
-
-					// Generate content for the node
-					m, err := dict.Gibber(25)
-					if err != nil {
-						return
-					}
-
-					// Create a new node
-					node := &types.Node{
-						Id:         len(tree.Root.Children) + 1,
-						Action:     types.CommentResponse,
-						Content:    m,
-						Confidence: rand.Float64(),
-						ParentId:   tree.Root.Id,
-						Engagements: types.Engagements{
-							Votes: FillAllVotes(rand.Intn(1000), rand.Intn(1000), rand.Intn(1000)),
-						},
-						Children: []*types.Node{},
-					}
-
-					// Calculates the score of the node
-					score, err := Calculate(cfg, node)
-					if err != nil {
-						log.Println(err)
-
-						return
-					}
-
-					// data = append(data, opts.LineData{Value: score})
-					node.Score = int64(score)
-					node.Timestamp = time.Now().Unix()
-
-					// Add the node to the tree
-					// tree.InsertNode(node)
-
-					tree.Root.Children = append(tree.Root.Children, node)
-
-					// Calculate the score of the thread
-					score, err = Calculate(cfg, tree.Root)
-					if err != nil {
-						log.Println(err)
-
-						return
-					}
-
-					// Calculate the change in score and increment the counter if the change is zero
-					if int64(score) == tree.Root.Score {
-						tree.InactiveCount++
-
-						d := CalculateDecay(int(tree.InactiveCount))
-						score = int(float64(score) * d)
-
-					} else {
-						tree.Root.Score = int64(score)
-						tree.Root.Timestamp = time.Now().Unix()
-					}
-				}
-
-				data = append(data, opts.LineData{Value: tree.Root.Score})
-
-				// Add the row to the table
-				ttable.AddRow(tree.Root.Id, tree.Root.Score, tree.Root.Timestamp)
-
-			case <-stop:
-				return
-			}
-		}
-	}()
+	tree.Root.Score = int64(score)
 
 	// Calculate the score of the thread one last time
 	score, err = Calculate(cfg, tree.Root)
 	if err != nil {
-		log.Println(err)
+		return nil, nil, nil, err
 	}
 
 	data = append(data, opts.LineData{Value: score})
@@ -315,7 +270,7 @@ func SimulateThread(cfg *types.Config, line *charts.Line, tick time.Duration, en
 
 	end, err := strconv.Atoi(endTime.String()[:len(endTime.String())-1])
 	if err != nil {
-		log.Println(err)
+		return nil, nil, nil, err
 	}
 
 	for i := 0; i < end; i++ {
@@ -326,5 +281,164 @@ func SimulateThread(cfg *types.Config, line *charts.Line, tick time.Duration, en
 		AddSeries("thread score", data).
 		SetSeriesOptions(charts.WithLineChartOpts(opts.LineChart{Smooth: true}))
 
+		// Write the tree to the neo4j
+
+	t.Timestamps = tree.Timestamps
+	t.Topic = tree.Topic
+	t.Category = tree.Category
+	t.RegisteredSpeakers = tree.RegisteredSpeakers
+	t.Voters = tree.Voters
+	t.Commenters = tree.Commenters
+	t.Comments = tree.Comments
+
+	tx, err = t.Update()
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	res, err = cfg.Neo4j.WriteTransaction(tx)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
 	return tree, ctable, ttable, nil
+}
+
+// Main run loop of the simulation
+func run(cfg *types.Config, score int, tree *Tree, ticker *time.Ticker, tick time.Duration, table table.Table, data []opts.LineData, stopChan chan bool) (int, error) {
+	// Adds comments until the ticker runs out
+	for {
+		select {
+		case <-ticker.C:
+			tree.Timestamps = append(tree.Timestamps, time.Now().Unix())
+
+			// After five seconds stop increasing the score of the root node
+			if time.Now().UnixNano() > time.Unix(tree.Timestamps[0], 0).UnixNano()+tick.Nanoseconds() {
+				// If the score hasn't changed...
+				if tree.Root.Score == tree.Root.Score {
+					tree.InactiveCount++
+
+					d := CalculateDecay(int(tree.InactiveCount))
+					if d != 0 {
+						tree.Root.Score = int64(float64(tree.Root.Score) * d)
+					}
+
+				} else {
+					tree.Root.Score = int64(score)
+					tree.Root.Timestamp = time.Now().Unix()
+				}
+			} else {
+
+				// Generate content for the node
+				m, err := dict.Gibber(25)
+				if err != nil {
+					return 0, err
+				}
+
+				// Create a new node
+				node := &types.Node{
+					Id:         fmt.Sprintln(len(tree.Root.Children) + 1),
+					Action:     types.CommentResponse,
+					Content:    m,
+					Confidence: rand.Float64(),
+					ParentId:   tree.Root.Id,
+					Timestamp:  time.Now().Unix(),
+					Engagements: types.Engagements{
+						Votes: FillAllVotes(rand.Intn(1000), rand.Intn(1000), rand.Intn(1000)),
+					},
+					Children: []*types.Node{},
+				}
+
+				s, _ := CalculateScore(cfg, node)
+
+				node.Score = int64(s)
+				tree.Root.Children = append(tree.Root.Children, node)
+
+				// Adds a new response to neo4j
+				r := neo.NewResponse()
+				r.Content = node.Content
+				r.Confidence = node.Confidence
+				r.Score = int64(s)
+				r.Timestamp = node.Timestamp
+				r.Engagements = node.Engagements
+
+				tx, err := r.Create()
+				if err != nil {
+					return 0, err
+				}
+
+				// Add the response to the database
+				_, err = cfg.Neo4j.WriteTransaction(tx)
+				if err != nil {
+					return 0, err
+				}
+
+				tree.Commenters++
+
+				user := types.NewUser("")
+				user.Responses = append(user.Responses, node)
+				user.Debates = append(user.Debates, tree.Root.Id)
+
+				// log.Println("User", user.Id, "commented on thread", tree.Root.Id, "with content", node.Content, "and score", node.Score, "and confidence", node.Confidence, "and votes", node.Engagements.Votes, "and timestamp", node.Timestamp)
+
+				u := neo.NewUser()
+				tx, err = u.Create()
+				if err != nil {
+					return 0, err
+				}
+
+				// Add the user to the database
+				_, err = cfg.Neo4j.WriteTransaction(tx)
+				if err != nil {
+					return 0, err
+				}
+
+				tx, err = u.AddUserResponseRelationship(r)
+				if err != nil {
+					return 0, err
+				}
+
+				_, err = cfg.Neo4j.WriteTransaction(tx)
+				if err != nil {
+					return 0, err
+				}
+
+				tx, err = u.AddUserDebateRelationship(&neo.Tree{Id: tree.Id})
+				if err != nil {
+					return 0, err
+				}
+
+				_, err = cfg.Neo4j.WriteTransaction(tx)
+				if err != nil {
+					return 0, err
+				}
+
+				// Calculate the score of the thread
+				score, err = Calculate(cfg, tree.Root)
+				if err != nil {
+					return 0, err
+				}
+
+				// Calculate the change in score and increment the counter if the change is zero
+				if int64(score) == tree.Root.Score {
+					tree.InactiveCount++
+
+					d := CalculateDecay(int(tree.InactiveCount))
+					score = int(float64(score) * d)
+
+				} else {
+					tree.Root.Score = int64(score)
+					tree.Root.Timestamp = time.Now().Unix()
+				}
+			}
+
+			data = append(data, opts.LineData{Value: tree.Root.Score})
+
+			// Add the row to the table
+			table.AddRow(tree.Root.Id, tree.Root.Score, tree.Root.Timestamp)
+
+		case <-stopChan:
+			return score, nil
+		}
+	}
 }

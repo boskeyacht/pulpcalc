@@ -2,6 +2,7 @@ package pulpcalc
 
 import (
 	"github.com/baribari2/pulp-calculator/common/types"
+	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/spf13/cobra"
 	"golang.org/x/net/dict"
 )
@@ -18,8 +19,7 @@ var (
 	cfg = &types.Config{}
 )
 
-func Execute(RedditSecretKey, RedditAccessToken, TwitterAccessKey, TwitterAccessToken, TwitterApiKey, TwitterApiSecret, TwitterBearerToken string, dictClient *dict.Client) {
-	cfg.RedditAccessToken = RedditAccessToken
+func Execute(RedditSecretKey, TwitterAccessKey, TwitterAccessToken, TwitterApiKey, TwitterApiSecret, TwitterBearerToken string, dictClient *dict.Client, session neo4j.Session) {
 	cfg.RedditSecretKey = RedditSecretKey
 	cfg.TwitterAccessKey = TwitterAccessKey
 	cfg.TwitterAccessToken = TwitterAccessToken
@@ -27,6 +27,7 @@ func Execute(RedditSecretKey, RedditAccessToken, TwitterAccessKey, TwitterAccess
 	cfg.TwitterApiSecret = TwitterApiSecret
 	cfg.TwitterBearerToken = TwitterBearerToken
 	cfg.DictServer = dictClient
+	cfg.Neo4j = session
 
 	rootCmd.Execute()
 }

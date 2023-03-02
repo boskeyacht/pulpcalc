@@ -131,11 +131,11 @@ The sim command,
 Will out put these tables, the comment table showing the generated nodes, and the time table showing
 the score of the thread over time.
 
-![thread score tables](./assets/calcput.jpg)
+![thread score tables](./static/calcput.jpg)
 
 It will also output this graph,
 
-![thread score graph](./assets/chartput.jpg)
+![thread score graph](./static/chartput.jpg)
 
 # API Keys
 - [Reddit](https://github.com/reddit-archive/reddit/wiki/OAuth2)

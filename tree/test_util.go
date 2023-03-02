@@ -1,6 +1,7 @@
 package tree
 
 import (
+	"fmt"
 	"math/rand"
 
 	"github.com/baribari2/pulp-calculator/common/types"
@@ -10,7 +11,7 @@ import (
 func setupPulpTree() (*Tree, error) {
 	tree := &Tree{
 		Root: &types.Node{
-			Id:         0,
+			Id:         "0",
 			Confidence: 75,
 			Score:      0,
 			Content:    "I think everyone needs a therapist",
@@ -28,8 +29,8 @@ func setupPulpTree() (*Tree, error) {
 			return nil, err
 		}
 
-		tree.Nodes[i] = &types.Node{
-			Id:      1,
+		tree.Nodes[fmt.Sprintln(i)] = &types.Node{
+			Id:      "1",
 			Score:   0,
 			Content: g,
 			Action:  types.CommentReply,
@@ -47,7 +48,7 @@ func setupPulpTree() (*Tree, error) {
 func setupViralPulpTree() (*Tree, error) {
 	tree := &Tree{
 		Root: &types.Node{
-			Id:         0,
+			Id:         "0",
 			Confidence: 75,
 			Score:      0,
 			Content:    "I think everyone needs a therapist",
@@ -65,8 +66,8 @@ func setupViralPulpTree() (*Tree, error) {
 			return nil, err
 		}
 
-		tree.Nodes[i] = &types.Node{
-			Id:      1,
+		tree.Nodes[fmt.Sprintln(i)] = &types.Node{
+			Id:      "1",
 			Score:   0,
 			Content: g,
 			Action:  types.CommentReply,
@@ -117,4 +118,8 @@ func FillAllVotes(valNum, invalNum, abstainNum int) []types.VoteType {
 		votes = append(votes, types.AbstainVoteType)
 	}
 	return votes
+}
+
+func MapVotesToUsers() {
+
 }

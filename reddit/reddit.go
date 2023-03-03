@@ -12,7 +12,7 @@ import (
 )
 
 // raw_json=1
-func AppOnlyRequest(cfg *types.Config) error {
+func AppOnlyRequest(cfg *types.Config) (string, error) {
 	id := uuid.New().String()
 
 	log.Printf("Len: %v", len(id))
@@ -29,15 +29,12 @@ func AppOnlyRequest(cfg *types.Config) error {
 		}),
 	)
 
-	log.Printf("\x1b[32m%s\x1b[0m%v", "Request:", res.Request)
-	log.Printf("\x1b[33m%s\x1b[0m%v", "Response:", res)
-
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	if res.StatusCode != 200 {
-		return errors.New("Failed to execute reddit app-only OAUTH request")
+		return "", errors.New("Failed to execute reddit app-only OAUTH request")
 	}
 
 	var t struct {
@@ -49,14 +46,10 @@ func AppOnlyRequest(cfg *types.Config) error {
 
 	err = json.NewDecoder(res.Body).Decode(&t)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	cfg.RedditAccessToken = t.AccessToken
-
-	log.Printf("Key: %v", cfg.RedditAccessToken)
-
-	return nil
+	return t.AccessToken, nil
 }
 
 func GetTrendingThread(*types.Config) (*tree.Tree, error) {

@@ -26,7 +26,7 @@ func SimulateTree(cfg *types.Config, line *charts.Line) gin.HandlerFunc {
 			return
 		}
 
-		tree, _, _, err := tree.SimulateThread(cfg, line, time.Duration(req.Tick), time.Duration(req.EndTime), req.Frequency)
+		tree, _, _, err := tree.SimulateThread(cfg, line, 0, time.Duration(req.Tick), time.Duration(req.EndTime), req.Frequency)
 		if err != nil {
 			log.Printf("failed to simulate thread: %v", err.Error())
 

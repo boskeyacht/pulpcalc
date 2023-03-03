@@ -41,7 +41,7 @@ func TestSingleComment(t *testing.T) {
 	cfg := initConfig()
 	tree := &Tree{
 		Root: &types.Node{
-			Id:         1,
+			Id:         "1",
 			Confidence: 63,
 			Score:      0,
 			Action:     types.CommentReply,
@@ -64,7 +64,7 @@ func TestRandomSingleComment(t *testing.T) {
 	cfg := initConfig()
 	tree := &Tree{
 		Root: &types.Node{
-			Id:         1,
+			Id:         "1",
 			Confidence: rand.Float64(),
 			Score:      0,
 			Action:     types.CommentReply,
@@ -87,7 +87,7 @@ func TestSingleShortComment(t *testing.T) {
 	cfg := initConfig()
 	tree := &Tree{
 		Root: &types.Node{
-			Id:         1,
+			Id:         "1",
 			Confidence: 63,
 			Score:      0,
 			Action:     types.CommentReply,

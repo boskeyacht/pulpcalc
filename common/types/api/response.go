@@ -17,10 +17,10 @@ type SimulateThreadResponse struct {
 	InactiveCount int64 `json:"inactive_count"`
 
 	// Map node Id to its children
-	Nodes map[int]*types.Node `json:"nodes"`
+	Nodes map[string]*types.Node `json:"nodes"`
 }
 
-func NewSimulateThreadResponse(root *types.Node, timestamps []int64, lastScore, inactiveCount int64, nodes map[int]*types.Node) *SimulateThreadResponse {
+func NewSimulateThreadResponse(root *types.Node, timestamps []int64, lastScore, inactiveCount int64, nodes map[string]*types.Node) *SimulateThreadResponse {
 	return &SimulateThreadResponse{
 		Root:          root,
 		Timestamps:    timestamps,
@@ -35,5 +35,5 @@ type GetTreeResponse struct {
 	Root *types.Node `json:"root"`
 
 	// Map node Id to its children
-	Nodes map[int]*types.Node `json:"nodes"`
+	Nodes map[string]*types.Node `json:"nodes"`
 }

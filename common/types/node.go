@@ -15,10 +15,10 @@ package types
 // Certain actions also have a score, which is the number of points accumulated by generating engagement
 // through said action.
 type Node struct {
-	Id int `json:"id"`
+	Id string `json:"id"`
 
 	// The Id of the parent node
-	ParentId int `json:"parent_id"`
+	ParentId string `json:"parent_id"`
 
 	Confidence float64 `json:"confidence"`
 
@@ -54,12 +54,12 @@ func (n *Node) GetChildren() []*Node {
 }
 
 // Returns the Id of the parent node
-func (n *Node) GetParentId() int {
+func (n *Node) GetParentId() string {
 	return n.ParentId
 }
 
 // Reutrns the Id of this node
-func (n *Node) GetId() int {
+func (n *Node) GetId() string {
 	return n.Id
 }
 

@@ -1,5 +1,5 @@
 package types
 
 type Content struct {
-	Message string
+	Message string `json:"message"`
 }

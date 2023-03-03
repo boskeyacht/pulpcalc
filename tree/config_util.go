@@ -15,6 +15,9 @@ var (
 	TwitterApiKey       string
 	TwitterApiSecret    string
 	TwitterBearerToken  string
+	NeoEndpoint         string
+	NeoUser             string
+	NeoPassword         string
 	DictServer          string
 )
 
@@ -42,7 +45,10 @@ func initConfig() *types.Config {
 	TwitterApiKey = getEnv("TWITTER_API_KEY")
 	TwitterApiSecret = getEnv("TWITTER_API_SECRET")
 	TwitterBearerToken = getEnv("TWITTER_BEARER_TOKEN")
+	NeoEndpoint = getEnv("NEO_ENDPOINT")
+	NeoUser = getEnv("NEO_USER")
+	NeoPassword = getEnv("NEO_PASSWORD")
 	DictServer = getOptionalEnv("DICT_SERVER")
 
-	return types.NewConfig(RedditSecretKey, TwitterAccessKey, TwitterAccessSecret, TwitterBearerToken)
+	return types.NewConfig(RedditSecretKey, TwitterAccessKey, TwitterAccessSecret, TwitterApiKey, TwitterApiSecret, NeoEndpoint, NeoUser, NeoPassword, TwitterBearerToken)
 }

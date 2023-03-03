@@ -8,7 +8,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/baribari2/pulp-calculator/sidecar"
+	"github.com/baribari2/pulp-calculator/grpc"
 	"github.com/baribari2/pulp-calculator/tree"
 	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
@@ -18,11 +18,13 @@ import (
 )
 
 var (
-	tick int64
-	len  int64
-	freq int64
+	tick  int64
+	len   int64
+	freq  int64
+	users int64
 )
 
+// TODO: change SimulateThread params in api
 var simCmd = &cobra.Command{
 	Use:     "sim",
 	Short:   "Simulate a thread",
@@ -34,7 +36,7 @@ var simCmd = &cobra.Command{
 		spinner := spinner.New(spinner.CharSets[35], 100*time.Millisecond, spinner.WithColor("green"))
 		spinner.Suffix = " Simulating thread...\n\n"
 
-		spinner.Start()
+		// spinner.Start()
 
 		l := charts.NewLine()
 		l.SetGlobalOptions(
@@ -48,7 +50,7 @@ var simCmd = &cobra.Command{
 		cf := color.New(color.FgYellow).SprintfFunc()
 
 		// Comment table & Time table
-		tree, ctable, ttable, err := tree.SimulateThread(cfg, l, tick, len, freq)
+		tree, ctable, ttable, err := tree.SimulateThread(cfg, l, users, tick, len, freq)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -64,7 +66,7 @@ var simCmd = &cobra.Command{
 		fmt.Printf("Time table: \n")
 		ttable.Print()
 
-		spinner.Stop()
+		// spinner.Stop()
 
 		http.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 			l.Render(w)
@@ -75,7 +77,7 @@ var simCmd = &cobra.Command{
 			http.ListenAndServe(":8080", nil)
 		}()
 
-		side := sidecar.NewSidecar(tree)
+		side := grpc.NewGrpcCalcServer(tree)
 		go side.Start()
 
 		fmt.Println("\n📣 gRPC server started on port 8081")
@@ -91,6 +93,7 @@ func init() {
 	simCmd.Flags().Int64VarP(&tick, "tick", "t", 0, "The starting tick")
 	simCmd.Flags().Int64VarP(&len, "len", "l", 0, "The total runtime (in seconds)")
 	simCmd.Flags().Int64VarP(&freq, "freq", "f", 0, "The frequency of the simulation")
+	simCmd.Flags().Int64VarP(&users, "users", "u", 0, "The number of users to simulate")
 
 	rootCmd.AddCommand(simCmd)
 }

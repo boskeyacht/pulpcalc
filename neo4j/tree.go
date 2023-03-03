@@ -56,7 +56,7 @@ func (t *Tree) Create() (neo4j.TransactionWork, error) {
 		}
 
 		if res.Next() {
-			return res.Record().GetByIndex(0), nil
+			return res.Record().Values[0], nil
 		}
 
 		return nil, res.Err()
@@ -80,7 +80,7 @@ func (t *Tree) GetTree() (neo4j.TransactionWork, error) {
 			return nil, err
 		}
 
-		tree := rec.GetByIndex(0).(dbtype.Node).Props
+		tree := rec.Values[0].(dbtype.Node).Props
 
 		return &Tree{
 			Id:                 tree["id"].(string),
@@ -131,7 +131,7 @@ func (t *Tree) Update() (neo4j.TransactionWork, error) {
 		}
 
 		if res.Next() {
-			return res.Record().GetByIndex(0), nil
+			return res.Record().Values[0], nil
 		}
 
 		return nil, res.Err()
@@ -151,7 +151,7 @@ func (t *Tree) IncreaseVoterCount() (neo4j.TransactionWork, error) {
 		}
 
 		if res.Next() {
-			return res.Record().GetByIndex(0), nil
+			return res.Record().Values[0], nil
 		}
 
 		return nil, res.Err()
@@ -171,7 +171,7 @@ func (t *Tree) DecreaseVoterCount() (neo4j.TransactionWork, error) {
 		}
 
 		if res.Next() {
-			return res.Record().GetByIndex(0), nil
+			return res.Record().Values[0], nil
 		}
 
 		return nil, res.Err()
@@ -192,7 +192,7 @@ func (t *Tree) SetVoterCount(count int64) (neo4j.TransactionWork, error) {
 		}
 
 		if res.Next() {
-			return res.Record().GetByIndex(0), nil
+			return res.Record().Values[0], nil
 		}
 
 		return nil, res.Err()
@@ -212,7 +212,7 @@ func (t *Tree) IncreaseCommenterCount() (neo4j.TransactionWork, error) {
 		}
 
 		if res.Next() {
-			return res.Record().GetByIndex(0), nil
+			return res.Record().Values[0], nil
 		}
 
 		return nil, res.Err()
@@ -232,7 +232,7 @@ func (t *Tree) DecreaseCommenterCount() (neo4j.TransactionWork, error) {
 		}
 
 		if res.Next() {
-			return res.Record().GetByIndex(0), nil
+			return res.Record().Values[0], nil
 		}
 
 		return nil, res.Err()
@@ -253,7 +253,7 @@ func (t *Tree) SetCommenterCount(count int64) (neo4j.TransactionWork, error) {
 		}
 
 		if res.Next() {
-			return res.Record().GetByIndex(0), nil
+			return res.Record().Values[0], nil
 		}
 
 		return nil, res.Err()

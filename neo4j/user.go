@@ -48,7 +48,7 @@ func (u *User) Create() (neo4j.TransactionWork, error) {
 		}
 
 		if res.Next() {
-			return res.Record().GetByIndex(0), nil
+			return res.Record().Values[0], nil
 		}
 
 		return nil, res.Err()
@@ -70,7 +70,7 @@ func (u *User) Update() (neo4j.TransactionWork, error) {
 		}
 
 		if res.Next() {
-			return res.Record().GetByIndex(0), nil
+			return res.Record().Values[0], nil
 		}
 
 		return nil, res.Err()
@@ -90,7 +90,7 @@ func (u *User) Delete() (neo4j.TransactionWork, error) {
 		}
 
 		if res.Next() {
-			return res.Record().GetByIndex(0), nil
+			return res.Record().Values[0], nil
 		}
 
 		return nil, res.Err()
@@ -114,7 +114,7 @@ func (u *User) GetUser() (neo4j.TransactionWork, error) {
 			return nil, err
 		}
 
-		user := rec.GetByIndex(0).(dbtype.Node).Props
+		user := rec.Values[0].(dbtype.Node).Props
 
 		return &User{
 			Id:      user["id"].(string),
@@ -138,7 +138,7 @@ func (u *User) AddUserResponseRelationship(r *Response) (neo4j.TransactionWork, 
 		}
 
 		if res.Next() {
-			return res.Record().GetByIndex(0), nil
+			return res.Record().Values[0], nil
 		}
 
 		return nil, res.Err()
@@ -148,7 +148,7 @@ func (u *User) AddUserResponseRelationship(r *Response) (neo4j.TransactionWork, 
 // Adds a relationship on the user to the debate that they participated in
 func (u *User) AddUserDebateRelationship(t *Tree) (neo4j.TransactionWork, error) {
 	return func(tx neo4j.Transaction) (interface{}, error) {
-		res, err := tx.Run("MATCH (u:User {id: $id}), (d:Debate {id: $debate_id}) CREATE (u)-[ud:USER_DEBATE]->(d) RETURN ud",
+		res, err := tx.Run("MATCH (u:User {id: $id}), (t:Tree {id: $debate_id}) CREATE (u)-[ud:USER_DEBATE]->(t) RETURN ud",
 			map[string]interface{}{
 				"id":        u.Id,
 				"debate_id": t.Id,
@@ -159,7 +159,7 @@ func (u *User) AddUserDebateRelationship(t *Tree) (neo4j.TransactionWork, error)
 		}
 
 		if res.Next() {
-			return res.Record().GetByIndex(0), nil
+			return res.Record().Values[0], nil
 		}
 
 		return nil, res.Err()
@@ -180,7 +180,7 @@ func (u *User) AddUserVotedValidResponseRelationship(r *Response) (neo4j.Transac
 		}
 
 		if res.Next() {
-			return res.Record().GetByIndex(0), nil
+			return res.Record().Values[0], nil
 		}
 
 		return nil, res.Err()
@@ -201,7 +201,7 @@ func (u *User) AddUserVotedInvalidResponseRelationship(r *Response) (neo4j.Trans
 		}
 
 		if res.Next() {
-			return res.Record().GetByIndex(0), nil
+			return res.Record().Values[0], nil
 		}
 
 		return nil, res.Err()
@@ -222,7 +222,7 @@ func (u *User) AddUserVotedAbstainResponseRelationship(r *Response) (neo4j.Trans
 		}
 
 		if res.Next() {
-			return res.Record().GetByIndex(0), nil
+			return res.Record().Values[0], nil
 		}
 
 		return nil, res.Err()
@@ -243,7 +243,7 @@ func (u *User) AddUserVotedValidDebateRelationship(t *Tree) (neo4j.TransactionWo
 		}
 
 		if res.Next() {
-			return res.Record().GetByIndex(0), nil
+			return res.Record().Values[0], nil
 		}
 
 		return nil, res.Err()
@@ -264,7 +264,7 @@ func (u *User) AddUserVotedInvalidDebateRelationship(t *Tree) (neo4j.Transaction
 		}
 
 		if res.Next() {
-			return res.Record().GetByIndex(0), nil
+			return res.Record().Values[0], nil
 		}
 
 		return nil, res.Err()

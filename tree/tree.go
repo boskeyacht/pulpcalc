@@ -385,6 +385,20 @@ outer:
 
 				r.Id = res.(dbtype.Node).Props["id"].(string)
 
+				tx, err = r.AddResponseOnDebate(&neo.Tree{Id: tree.Id})
+				if err != nil {
+					fmt.Println(err.Error())
+
+					return
+				}
+
+				_, err = cfg.Neo4j.WriteTransaction(tx, neo4j.WithTxTimeout(1*time.Second))
+				if err != nil {
+					fmt.Println(err.Error())
+
+					return
+				}
+
 				tree.Commenters++
 
 				user := types.NewUser("")

@@ -8,7 +8,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/baribari2/pulp-calculator/sidecar"
+	"github.com/baribari2/pulp-calculator/grpc"
 	"github.com/baribari2/pulp-calculator/tree"
 	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
@@ -77,7 +77,7 @@ var simCmd = &cobra.Command{
 			http.ListenAndServe(":8080", nil)
 		}()
 
-		side := sidecar.NewSidecar(tree)
+		side := grpc.NewGrpcCalcServer(tree)
 		go side.Start()
 
 		fmt.Println("\n📣 gRPC server started on port 8081")

@@ -8,4 +8,4 @@ docker-run:
 	
 docker-clean:
 	@docker image rm calc
-	@docker image rm 1.19.6-bullseye
+	@docker image rm golang:1.19.6-bullseye

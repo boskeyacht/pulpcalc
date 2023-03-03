@@ -1,4 +1,4 @@
-package sidecar
+package grpc
 
 import (
 	"context"
@@ -12,8 +12,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-// Sidecar is a gRPC server that serves the tree
-type Sidecar struct {
+type grpcServer struct {
 	proto.CalcTreeServer
 	Server    *grpc.Server
 	Tree      *tree.Tree
@@ -24,13 +23,13 @@ type Sidecar struct {
 	Frequency int64
 }
 
-func NewSidecar(tree *tree.Tree) *Sidecar {
-	return &Sidecar{
+func NewGrpcCalcServer(tree *tree.Tree) *grpcServer {
+	return &grpcServer{
 		Tree: tree,
 	}
 }
 
-func (s *Sidecar) Start() error {
+func (s *grpcServer) Start() error {
 	sv := grpc.NewServer()
 	proto.RegisterCalcTreeServer(sv, s)
 
@@ -44,7 +43,7 @@ func (s *Sidecar) Start() error {
 	return sv.Serve(conn)
 }
 
-func (s *Sidecar) GetCalcTree(ctx context.Context, req *proto.CalcTreeRequest) (*proto.CalcTreeResponse, error) {
+func (s *grpcServer) GetCalcTree(ctx context.Context, req *proto.CalcTreeRequest) (*proto.CalcTreeResponse, error) {
 	children := make([]*proto.Node, len(s.Tree.Root.Children))
 
 	for i, c := range s.Tree.Root.Children {

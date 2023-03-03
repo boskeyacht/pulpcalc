@@ -36,7 +36,7 @@ func NewUser() *User {
 // Creates a new user in neo4j
 func (u *User) Create() (neo4j.TransactionWork, error) {
 	return func(tx neo4j.Transaction) (interface{}, error) {
-		res, err := tx.Run("CREATE (u:User {id: $id, votes: $votes, debates: $debates}) RETURN u",
+		res, err := tx.Run("CREATE (u:User {id: $id, votes: $votes, debates: $debates}) RETURN u.id",
 			map[string]interface{}{
 				"id":      uuid.New().String(),
 				"votes":   u.Votes,

@@ -39,7 +39,7 @@ func NewTree() *Tree {
 // Creates a new debate/tree in neo4j
 func (t *Tree) Create() (neo4j.TransactionWork, error) {
 	return func(tx neo4j.Transaction) (interface{}, error) {
-		res, err := tx.Run("CREATE (t:Tree {id: $id, timestamps: $timestamps, topic: $topic, category: $category, registered_speakers: $registered_speakers, voters: $voters, commenters: $commenters, comments: $comments}) RETURN t",
+		res, err := tx.Run("CREATE (t:Tree {id: $id, timestamps: $timestamps, topic: $topic, category: $category, registered_speakers: $registered_speakers, voters: $voters, commenters: $commenters, comments: $comments}) RETURN t.id",
 			map[string]interface{}{
 				"id":                  uuid.New().String(),
 				"timestamps":          t.Timestamps,

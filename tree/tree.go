@@ -14,7 +14,6 @@ import (
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/opts"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j/dbtype"
 	"github.com/rodaine/table"
 )
 
@@ -188,16 +187,17 @@ func CalculateScore(cfg *types.Config, node *types.Node) (int, error) {
 // The lower the number the higher the frequency of comments.
 func SimulateThread(cfg *types.Config, line *charts.Line, users int64, tick time.Duration, endTime time.Duration, freq int64) (*Tree, table.Table, table.Table, error) {
 	// ticker := randtick.NewRandTickN(2)
-	tree := &Tree{
-		Topic:    "Does everyone need a therapist?",
-		Category: "healthcare",
-	}
-	tree.Nodes = make(map[string]*types.Node)
 	ticker := time.NewTicker(tick)
 	ctable := table.New("Id", "Action", "Content", "Confidence", "Votes", "Time", "Score")
 	ttable := table.New("Id", "Score", "Time")
 	data := []opts.LineData{}
 	stop := make(chan bool)
+	tree := &Tree{
+		Topic:    "Does everyone need a therapist?",
+		Category: "healthcare",
+		Nodes:    make(map[string]*types.Node),
+	}
+
 	// Creates a new tree for insertion into neo4j
 	t := neo.NewTree()
 	tx, err := t.Create()
@@ -210,7 +210,7 @@ func SimulateThread(cfg *types.Config, line *charts.Line, users int64, tick time
 		return nil, nil, nil, err
 	}
 
-	tree.Id = res.(dbtype.Node).Props["id"].(string)
+	tree.Id = res.(string)
 
 	tc, err := dict.Gibber(25)
 	if err != nil {
@@ -239,9 +239,8 @@ func SimulateThread(cfg *types.Config, line *charts.Line, users int64, tick time
 
 	tree.Root.Score = int64(score)
 
-	scoreChan := make(chan int64, 1)
-
 	// The main simulation goroutine
+	scoreChan := make(chan int64, 1)
 	go run(cfg, score, tree, ticker, endTime, ttable, data, stop, scoreChan)
 
 	// Sleep until simulation is done
@@ -383,7 +382,7 @@ outer:
 					return
 				}
 
-				r.Id = res.(dbtype.Node).Props["id"].(string)
+				r.Id = res.(string)
 
 				tx, err = r.AddResponseOnDebate(&neo.Tree{Id: tree.Id})
 				if err != nil {
@@ -421,7 +420,7 @@ outer:
 					return
 				}
 
-				u.Id = res.(dbtype.Node).Props["id"].(string)
+				u.Id = res.(string)
 
 				tx, err = u.AddUserResponseRelationship(r)
 				if err != nil {

@@ -10,7 +10,6 @@ import (
 
 	"github.com/baribari2/pulp-calculator/grpc"
 	"github.com/baribari2/pulp-calculator/tree"
-	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/opts"
@@ -33,10 +32,7 @@ var simCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		tick := time.Duration(time.Duration(tick) * time.Second)
 		len := time.Duration(time.Duration(len) * time.Second)
-		spinner := spinner.New(spinner.CharSets[35], 100*time.Millisecond, spinner.WithColor("green"))
-		spinner.Suffix = " Simulating thread...\n\n"
-
-		// spinner.Start()
+		fmt.Printf("\x1b[32m%s\x1b[0m", " Simulating thread...\n\n")
 
 		l := charts.NewLine()
 		l.SetGlobalOptions(
@@ -65,8 +61,6 @@ var simCmd = &cobra.Command{
 
 		fmt.Printf("Time table: \n")
 		ttable.Print()
-
-		// spinner.Stop()
 
 		http.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 			l.Render(w)

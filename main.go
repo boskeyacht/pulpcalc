@@ -41,5 +41,7 @@ func main() {
 
 	s := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 
-	cmd.Execute(cfg.RedditSecretKey, cfg.TwitterAccessKey, cfg.TwitterAccessToken, cfg.TwitterApiKey, cfg.TwitterApiSecret, cfg.TwitterBearerToken, cfg.DictServer, s)
+	cfg.Neo4j = s
+
+	cmd.Execute(cfg)
 }

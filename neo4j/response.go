@@ -28,7 +28,7 @@ func NewResponse() *Response {
 func (r *Response) Create() (neo4j.TransactionWork, error) {
 	return func(tx neo4j.Transaction) (interface{}, error) {
 		// TODO: engagements: $engagements
-		res, err := tx.Run("CREATE (r:Response {id: $id, content: $content, confidence: $confidence, score: $score, timestamp: $timestamp}) RETURN r",
+		res, err := tx.Run("CREATE (r:Response {id: $id, content: $content, confidence: $confidence, score: $score, timestamp: $timestamp}) RETURN r.id",
 			map[string]interface{}{
 				"id":         uuid.New().String(),
 				"content":    r.Content,

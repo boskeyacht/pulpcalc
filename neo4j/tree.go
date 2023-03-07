@@ -32,8 +32,30 @@ type Tree struct {
 	Comments int64 `json:"comments"`
 }
 
-func NewTree() *Tree {
-	return &Tree{}
+func NewTree(id string, timestamps []int64, topic string, category string, registeredSpeakers int64, voters int64, commenters int64, comments int64) *Tree {
+	return &Tree{
+		Id:                 id,
+		Timestamps:         timestamps,
+		Topic:              topic,
+		Category:           category,
+		RegisteredSpeakers: registeredSpeakers,
+		Voters:             voters,
+		Commenters:         commenters,
+		Comments:           comments,
+	}
+}
+
+func NewTreeDefault() *Tree {
+	return &Tree{
+		Id:                 "",
+		Timestamps:         []int64{},
+		Topic:              "",
+		Category:           "",
+		RegisteredSpeakers: 0,
+		Voters:             0,
+		Commenters:         0,
+		Comments:           0,
+	}
 }
 
 // Creates a new debate/tree in neo4j

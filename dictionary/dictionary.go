@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/baribari2/pulp-calculator/common/types"
+	"golang.org/x/net/dict"
 )
 
 var (
@@ -114,10 +114,23 @@ var (
 	}
 )
 
+func IsWord(dictServer *dict.Client, word string) bool {
+	def, err := dictServer.Define("!", word)
+	if err != nil {
+		return false
+	}
+
+	return len(def) > 0
+}
+
+func IsWord_(word string) bool {
+	return true
+}
+
 // Counts and returns the number of words in the english dictionary
 //
 // TODO: Filter out punctuation
-func CountCorrectWords(cfg *types.Config, msg string) (int, error) {
+func CountCorrectWords(dictServer *dict.Client, msg string) (int, error) {
 	var correctWords int
 
 	for _, word := range strings.Split(msg, " ") {
@@ -125,7 +138,7 @@ func CountCorrectWords(cfg *types.Config, msg string) (int, error) {
 		word := FilterPunctuation(word)
 
 		// Clean the word in preparation for the query
-		def, err := cfg.DictServer.Define("!", word)
+		def, err := dictServer.Define("!", word)
 		if err != nil {
 			return 0, err
 		}
@@ -139,7 +152,7 @@ func CountCorrectWords(cfg *types.Config, msg string) (int, error) {
 }
 
 // Counts and returns both words in the common word map, and words in the english dictionary
-func CountCorrectAndCommonWords(cfg *types.Config, msg string) (correctWords, commonWords int, err error) {
+func CountCorrectAndCommonWords(dictServer *dict.Client, msg string) (correctWords, commonWords int, err error) {
 	t := strings.ReplaceAll(msg, " ", "")
 	if len(t) < 80 {
 		return 0, 0, errors.New("Content too short (expected at least 100 characters)")
@@ -150,7 +163,7 @@ func CountCorrectAndCommonWords(cfg *types.Config, msg string) (correctWords, co
 		word := FilterPunctuation(word)
 
 		// Clean the word in preparation for the query
-		// def, err := cfg.DictServer.Define("!", word)
+		// def, err := dictServer.Define("!", word)
 		// if err != nil {
 		// 	return 0, 0, err
 		// }

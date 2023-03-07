@@ -7,7 +7,7 @@ import (
 
 	"github.com/baribari2/pulp-calculator/common/types"
 	api "github.com/baribari2/pulp-calculator/common/types/api"
-	"github.com/baribari2/pulp-calculator/tree"
+	"github.com/baribari2/pulp-calculator/simulator"
 	"github.com/gin-gonic/gin"
 	"github.com/go-echarts/go-echarts/v2/charts"
 )
@@ -26,7 +26,7 @@ func SimulateTree(cfg *types.Config, line *charts.Line) gin.HandlerFunc {
 			return
 		}
 
-		tree, _, _, err := tree.SimulateThread(cfg, line, 0, time.Duration(req.Tick), time.Duration(req.EndTime), req.Frequency)
+		_, _, _, err = simulator.SimulateThread(cfg, line, 0, time.Duration(req.Tick), time.Duration(req.EndTime), req.Frequency)
 		if err != nil {
 			log.Printf("failed to simulate thread: %v", err.Error())
 
@@ -36,7 +36,7 @@ func SimulateTree(cfg *types.Config, line *charts.Line) gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, api.NewSimulateThreadResponse(tree.Root, tree.Timestamps, tree.LastScore, tree.InactiveCount, tree.Nodes))
+		// c.JSON(http.StatusOK, api.NewSimulateThreadResponse(tree.Root, tree.Timestamps, tree.LastScore, tree.InactiveCount, tree.Nodes))
 	}
 }
 

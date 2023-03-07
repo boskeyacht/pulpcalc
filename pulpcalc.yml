@@ -1,0 +1,56 @@
+# A set is the main data structure for a simulation, it provides context for running the simulation,
+# and the method for running the simulation itself (the latter not needed in config).
+#
+# Simulations can be run concurrently, which means you can provide multiple sets in this config file
+# that are to be simulated. Set definitions can be found in the `simulator/sets` folder, README, or
+# below :) Currently the config for all sets is the same at which point the differentiating factor for
+# the simulation logic is determined by `simulation_type`.
+sets:
+    -   
+        simulation_type: "enneagram"
+        simulation_size: 5
+        distribution:
+          - 0.20
+          - 0.20
+          - 0.20
+          - 0.20
+          - 0.20
+        duration: 30
+        topic: "Does everyone need a therapist"
+        category: "Healthcare"
+    -   
+        simulation_type: "enneagram"
+        simulation_size: 5
+        distribution:
+          - 0.20
+          - 0.20
+          - 0.20
+          - 0.20
+          - 0.20
+        duration: 30
+        topic: "Is America more polarized than ever when it comes to politics?"
+        category: "Politics"
+    -   
+        simulation_type: "enneagram"
+        simulation_size: 5
+        distribution:
+          - 0.20
+          - 0.20
+          - 0.20
+          - 0.20
+          - 0.20
+        duration: 30
+        topic: "Is digital technology making children's lives better?"
+        category: "Politics"
+    -   
+        simulation_type: "enneagram"
+        simulation_size: 5
+        distribution:
+          - 0.20
+          - 0.20
+          - 0.20
+          - 0.20
+          - 0.20
+        duration: 30
+        topic: "Shuold universal basic income be considered a basic human right?"
+        category: "Politics"

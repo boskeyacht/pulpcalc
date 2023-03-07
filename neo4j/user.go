@@ -7,40 +7,47 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j/dbtype"
 )
 
-type UserVote struct {
-	// The type of vote (Valid, Invalid, or Abstain)
-	Vote *types.VoteType `json:"vote"`
-
-	// The Id of the debate that was voted on
-	DebateId int64 `json:"debate_id"`
-
-	// The ID of the post that was voted on
-	PostId int64 `json:"post_id"`
-}
-
 type User struct {
 	// The id of the user
 	Id string `json:"id"`
 
 	// The votes the user has cast
-	Votes []*UserVote `json:"vote"`
+	Votes []*types.UserVote `json:"vote"`
 
 	// The debates the user has participated in
-	Debates []interface{} `json:"debates"`
+	Debates []string `json:"debates"`
+
+	// Data from the simulation set
+	SetData map[types.SimulationType]interface{} `json:"set_data"`
 }
 
-func NewUser() *User {
-	return &User{}
+func NewUser(id string, votes []*types.UserVote, debates []string, setData map[types.SimulationType]interface{}) *User {
+	return &User{
+		Id:      id,
+		Votes:   votes,
+		Debates: debates,
+		SetData: setData,
+	}
+}
+
+func NewUserDefault() *User {
+	return &User{
+		Id:      "",
+		Votes:   []*types.UserVote{},
+		Debates: []string{},
+		SetData: map[types.SimulationType]interface{}{},
+	}
 }
 
 // Creates a new user in neo4j
 func (u *User) Create() (neo4j.TransactionWork, error) {
 	return func(tx neo4j.Transaction) (interface{}, error) {
-		res, err := tx.Run("CREATE (u:User {id: $id, votes: $votes, debates: $debates}) RETURN u.id",
+		res, err := tx.Run("CREATE (u:User {id: $id, votes: $votes, debates: $debates, simulation_type: $type}) RETURN u.id",
 			map[string]interface{}{
 				"id":      uuid.New().String(),
 				"votes":   u.Votes,
 				"debates": u.Debates,
+				"type":    u.SetData[types.Enneagram].(*types.EnneagramData).PersonalityType,
 			})
 
 		if err != nil {
@@ -118,8 +125,8 @@ func (u *User) GetUser() (neo4j.TransactionWork, error) {
 
 		return &User{
 			Id:      user["id"].(string),
-			Votes:   user["votes"].([]*UserVote),
-			Debates: user["debates"].([]interface{}),
+			Votes:   user["votes"].([]*types.UserVote),
+			Debates: user["debates"].([]string),
 		}, nil
 	}, nil
 }

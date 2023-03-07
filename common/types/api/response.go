@@ -1,10 +1,8 @@
 package types
 
-import "github.com/baribari2/pulp-calculator/common/types"
-
 type SimulateThreadResponse struct {
 	// The root of the tree
-	Root *types.Node `json:"root"`
+	Root interface{} `json:"root"`
 
 	// The timestamps of the simulation
 	Timestamps []int64 `json:"timestamps"`
@@ -17,10 +15,10 @@ type SimulateThreadResponse struct {
 	InactiveCount int64 `json:"inactive_count"`
 
 	// Map node Id to its children
-	Nodes map[string]*types.Node `json:"nodes"`
+	Nodes map[string]interface{} `json:"nodes"`
 }
 
-func NewSimulateThreadResponse(root *types.Node, timestamps []int64, lastScore, inactiveCount int64, nodes map[string]*types.Node) *SimulateThreadResponse {
+func NewSimulateThreadResponse(root interface{}, timestamps []int64, lastScore, inactiveCount int64, nodes map[string]interface{}) *SimulateThreadResponse {
 	return &SimulateThreadResponse{
 		Root:          root,
 		Timestamps:    timestamps,
@@ -32,8 +30,8 @@ func NewSimulateThreadResponse(root *types.Node, timestamps []int64, lastScore, 
 
 type GetTreeResponse struct {
 	// The root of the tree
-	Root *types.Node `json:"root"`
+	Root interface{} `json:"root"`
 
 	// Map node Id to its children
-	Nodes map[string]*types.Node `json:"nodes"`
+	Nodes map[string]interface{} `json:"nodes"`
 }

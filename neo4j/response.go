@@ -18,11 +18,28 @@ type Response struct {
 
 	Timestamp int64 `json:"timestamp"`
 
-	types.Engagements
+	Engagements *types.Engagements
 }
 
-func NewResponse() *Response {
-	return &Response{}
+func NewResponse(id string, content string, confidence float64, score int64, timestamp int64, engagements *types.Engagements) *Response {
+	return &Response{
+		Id:          id,
+		Content:     content,
+		Confidence:  confidence,
+		Score:       score,
+		Timestamp:   timestamp,
+		Engagements: engagements,
+	}
+}
+
+func NewResponseDefault() *Response {
+	return &Response{
+		Id:         "",
+		Content:    "",
+		Confidence: 0,
+		Score:      0,
+		Timestamp:  0,
+	}
 }
 
 func (r *Response) Create() (neo4j.TransactionWork, error) {

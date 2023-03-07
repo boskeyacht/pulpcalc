@@ -7,7 +7,7 @@ import (
 
 	"github.com/baribari2/pulp-calculator/common/types"
 	"github.com/baribari2/pulp-calculator/proto"
-	"github.com/baribari2/pulp-calculator/tree"
+	"github.com/baribari2/pulp-calculator/simulator"
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"google.golang.org/grpc"
 )
@@ -15,7 +15,7 @@ import (
 type grpcServer struct {
 	proto.CalcTreeServer
 	Server    *grpc.Server
-	Tree      *tree.Tree
+	Debate    *simulator.Debate
 	Config    *types.Config
 	LineChart *charts.Line
 	Tick      time.Duration
@@ -23,9 +23,9 @@ type grpcServer struct {
 	Frequency int64
 }
 
-func NewGrpcCalcServer(tree *tree.Tree) *grpcServer {
+func NewGrpcCalcServer(debate *simulator.Debate) *grpcServer {
 	return &grpcServer{
-		Tree: tree,
+		Debate: debate,
 	}
 }
 
@@ -44,9 +44,9 @@ func (s *grpcServer) Start() error {
 }
 
 func (s *grpcServer) GetCalcTree(ctx context.Context, req *proto.CalcTreeRequest) (*proto.CalcTreeResponse, error) {
-	children := make([]*proto.Node, len(s.Tree.Root.Children))
+	children := make([]*proto.Node, len(s.Debate.Root.Children))
 
-	for i, c := range s.Tree.Root.Children {
+	for i, c := range s.Debate.Root.Children {
 		children[i] = &proto.Node{
 			// Id:            int64(c.Id),
 			// ParentId:      int64(c.ParentId),
@@ -60,17 +60,17 @@ func (s *grpcServer) GetCalcTree(ctx context.Context, req *proto.CalcTreeRequest
 
 	return &proto.CalcTreeResponse{
 		Root: &proto.Node{
-			// Id:            int64(s.Tree.Root.Id),
-			// ParentId:      int64(s.Tree.Root.ParentId),
-			Confidence:    float32(s.Tree.Root.Confidence),
-			Score:         s.Tree.Root.Score,
-			LastScore:     s.Tree.Root.LastScore,
-			InactiveCount: s.Tree.Root.InactiveCount,
+			// Id:            int64(s.Debate.Root.Id),
+			// ParentId:      int64(s.Debate.Root.ParentId),
+			Confidence:    float32(s.Debate.Root.Confidence),
+			Score:         s.Debate.Root.Score,
+			LastScore:     s.Debate.Root.LastScore,
+			InactiveCount: s.Debate.Root.InactiveCount,
 			Children:      children,
 		},
-		Timestamps:    s.Tree.Timestamps,
-		LastScore:     s.Tree.LastScore,
-		InactiveCount: s.Tree.InactiveCount,
+		Timestamps:    s.Debate.Timestamps,
+		LastScore:     s.Debate.LastScore,
+		InactiveCount: s.Debate.InactiveCount,
 		Nodes:         nil,
 	}, nil
 }

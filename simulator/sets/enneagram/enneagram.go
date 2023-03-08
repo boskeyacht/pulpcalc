@@ -286,6 +286,11 @@ func generateEngagement(cfg *types.Config, r *simulator.Response, users []*types
 
 	content := &ContentResponse{}
 	err = json.Unmarshal([]byte(res), &content)
+	if err != nil {
+		fmt.Println(err.Error())
+
+		return
+	}
 
 	response := &simulator.Response{
 		Timestamp: time.Now().Unix(),
@@ -316,16 +321,17 @@ func generateEngagement(cfg *types.Config, r *simulator.Response, users []*types
 
 	r.Engagements = engagement
 
-	rs := neo.NewResponse(r.Id, r.Content.Message, r.Confidence, r.Score, r.Timestamp, r.Engagements)
+	rs := neo.NewResponse(response.Id, response.Content.Message, response.Confidence, response.Score, response.Timestamp, response.Engagements)
 	tx, err := rs.Create()
 	if err != nil {
 		return
 	}
 
 	res = writeOrPanic(cfg.Neo4j, tx).(string)
-	r.Id = res
+	response.Id = res
+	rs.Id = res
 
-	fmt.Println("response ", r)
+	fmt.Println("response ", response)
 
 	tx, err = um.AddUserResponseRelationship(rs)
 	if err != nil {

@@ -41,7 +41,7 @@ sets:
           - 0.20
           - 0.20
           - 0.20
-        duration: 60
+        duration: 90
         topic: "Is digital technology making children's lives better?"
         category: "Politics"
         depth: 4

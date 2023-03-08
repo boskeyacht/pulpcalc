@@ -15,9 +15,10 @@ sets:
           - 0.20
           - 0.20
           - 0.20
-        duration: 30
+        duration: 60
         topic: "Does everyone need a therapist"
         category: "Healthcare"
+        depth: 4
     # -   
     #     simulation_type: "enneagram"
     #     simulation_size: 100
@@ -30,6 +31,7 @@ sets:
     #     duration: 90
     #     topic: "Is America more polarized than ever when it comes to politics?"
     #     category: "Politics"
+    #     depth: 4
     -   
         simulation_type: "enneagram"
         simulation_size: 100
@@ -39,9 +41,10 @@ sets:
           - 0.20
           - 0.20
           - 0.20
-        duration: 90
+        duration: 60
         topic: "Is digital technology making children's lives better?"
         category: "Politics"
+        depth: 4
     # -   
     #     simulation_type: "enneagram"
     #     simulation_size: 5
@@ -54,3 +57,4 @@ sets:
     #     duration: 5
     #     topic: "Shuold universal basic income be considered a basic human right?"
     #     category: "Politics"
+    #     depth: 4

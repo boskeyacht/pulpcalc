@@ -158,3 +158,23 @@ func (r *Response) AddResponseOnDebate(t *Tree) (neo4j.TransactionWork, error) {
 		return nil, res.Err()
 	}, nil
 }
+
+func (r *Response) AddReplyOnResponse(res *Response) (neo4j.TransactionWork, error) {
+	return func(tx neo4j.Transaction) (interface{}, error) {
+		res, err := tx.Run("MATCH (r1:Response {id: $responseId1}), (r2:Response {id: $responseId2}) CREATE (r2)-[:REPLY_TO_RESPONSE]->(r1)",
+			map[string]interface{}{
+				"responseId1": r.Id,
+				"responseId2": res.Id,
+			})
+
+		if err != nil {
+			return nil, err
+		}
+
+		if res.Next() {
+			return res.Record().Values[0], nil
+		}
+
+		return nil, res.Err()
+	}, nil
+}

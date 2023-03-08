@@ -24,15 +24,15 @@ type Engagements struct {
 
 	// Responses to the content
 	// Rank 4
-	Response int64 `json:"response"`
+	Responses int64 `json:"response"`
 }
 
-func NewEngagements(reports []*Report, hideCount int, votes []VoteType, response int64) *Engagements {
+func NewEngagements(reports []*Report, hideCount int, votes []VoteType, responses int64) *Engagements {
 	return &Engagements{
 		Reports:   reports,
 		HideCount: hideCount,
 		Votes:     votes,
-		Response:  response,
+		Responses: responses,
 	}
 }
 

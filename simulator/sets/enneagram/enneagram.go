@@ -27,9 +27,11 @@ type EnneagramSet struct {
 	Topic string `json:"topic" yaml:"topic"`
 
 	Category string `json:"category" yaml:"category"`
+
+	Depth int `json:"depth" yaml:"depth"`
 }
 
-func NewEnneagramSet(size int, users []*types.User, distribution []float64, duration time.Duration, topic string, category string) *EnneagramSet {
+func NewEnneagramSet(size int, users []*types.User, distribution []float64, duration time.Duration, topic string, category string, depth int) *EnneagramSet {
 	return &EnneagramSet{
 		SimulationSize: size,
 		Users:          users,
@@ -37,6 +39,7 @@ func NewEnneagramSet(size int, users []*types.User, distribution []float64, dura
 		Duration:       duration,
 		Topic:          topic,
 		Category:       category,
+		Depth:          depth,
 	}
 }
 
@@ -48,6 +51,7 @@ func NewEnneagramSetDefault() *EnneagramSet {
 		Duration:       0,
 		Topic:          "",
 		Category:       "",
+		Depth:          0,
 	}
 }
 
@@ -73,6 +77,10 @@ func (e *EnneagramSet) GetDuration() time.Duration {
 
 func (e *EnneagramSet) GetTopic() string {
 	return e.Topic
+}
+
+func (e *EnneagramSet) GetDepth() int {
+	return e.Depth
 }
 
 func (e *EnneagramSet) GetCategory() string {
@@ -210,6 +218,9 @@ func (e *EnneagramSet) RunSimulation(wg *sync.WaitGroup, cfg *types.Config, deba
 
 				writeOrPanic(cfg.Neo4j, tx)
 
+				// ...
+				generateEngagement(cfg, response, us, e.Depth)
+
 				debate := neo.NewTree(debate.Id, nil, "", "", 0, 0, 0, 0)
 				tx, err = resp.AddResponseOnDebate(debate)
 				if err != nil {
@@ -248,6 +259,87 @@ func (e *EnneagramSet) RunSimulation(wg *sync.WaitGroup, cfg *types.Config, deba
 
 	debateChan <- debate
 	wg.Done()
+}
+
+func generateEngagement(cfg *types.Config, r *simulator.Response, users []*types.User, depth int) {
+	engagement := &types.Engagements{}
+
+	if depth == 0 {
+		return
+	}
+
+	randUser := users[rand.Intn(len(users)-1)]
+	um := neo.NewUser(randUser.Id, nil, nil, nil)
+	rm := neo.NewResponse(r.Id, "", 0, 0, 0, nil)
+
+	p := strings.Replace(enneagramReplyPrompt, "THIS_CONTENT", r.Content.Message, 1)
+	p = strings.Replace(p, "VALID_VOTE_TENDENCY", fmt.Sprintf("%v", randUser.SetData[types.Enneagram].(*types.EnneagramData).Tendencies.ValidVoteTendency), 1)
+	p = strings.Replace(p, "INVALID_VOTE_TENDENCY", fmt.Sprintf("%v", randUser.SetData[types.Enneagram].(*types.EnneagramData).Tendencies.InvalidVoteTendency), 1)
+	p = strings.Replace(p, "ABSTAIN_VOTE_TENDENCY", fmt.Sprintf("%v", randUser.SetData[types.Enneagram].(*types.EnneagramData).Tendencies.AbstainVoteTendency), 1)
+	p = strings.Replace(p, "REPORT_TENDENCY", fmt.Sprintf("%v", randUser.SetData[types.Enneagram].(*types.EnneagramData).Tendencies.ReportTendency), 1)
+	p = strings.Replace(p, "HIDE_TENDENCY", fmt.Sprintf("%v", randUser.SetData[types.Enneagram].(*types.EnneagramData).Tendencies.HideTendency), 1)
+
+	res, err := chatgpt.SendChatRequest(cfg.OpenAIClient, p)
+	if err != nil {
+		return
+	}
+
+	content := &ContentResponse{}
+	err = json.Unmarshal([]byte(res), &content)
+
+	response := &simulator.Response{
+		Timestamp: time.Now().Unix(),
+		ParentId:  r.Id,
+		// RootTimestamp: debate.Root.Timestamp,
+		Attributes:  &types.Attributes{},
+		Children:    make([]*simulator.Response, 0),
+		Engagements: &types.Engagements{},
+		Content:     simulator.NewContent(0, content.Content),
+		Confidence:  content.Confidence,
+	}
+
+	vv := simulator.FillValidVotes(rand.Intn(len(users) - 1))
+	iv := simulator.FillInvalidVotes(rand.Intn((len(users) - 1) - len(vv)))
+	av := simulator.FillAbstainVotes(rand.Intn((len(users) - 1) - (len(vv) + len(iv))))
+
+	engagement.Votes = append(engagement.Votes, vv...)
+	engagement.Votes = append(engagement.Votes, iv...)
+	engagement.Votes = append(engagement.Votes, av...)
+
+	engagement.Reports = simulator.FillReports(rand.Intn(int(float64(len(users)) * 0.03)))
+
+	engagement.Responses = int64(depth)
+
+	fmt.Println("engagement ", engagement)
+
+	r.Engagements = engagement
+
+	rs := neo.NewResponse(r.Id, r.Content.Message, r.Confidence, r.Score, r.Timestamp, r.Engagements)
+	tx, err := rs.Create()
+	if err != nil {
+		return
+	}
+
+	res = writeOrPanic(cfg.Neo4j, tx).(string)
+	r.Id = res
+
+	fmt.Println("response ", r)
+
+	tx, err = um.AddUserResponseRelationship(rs)
+	if err != nil {
+		return
+	}
+
+	writeOrPanic(cfg.Neo4j, tx)
+
+	tx, err = rm.AddReplyOnResponse(rs)
+	if err != nil {
+		return
+	}
+
+	writeOrPanic(cfg.Neo4j, tx)
+
+	generateEngagement(cfg, response, users, depth-1)
 }
 
 func matchUserTendency(enneagramType int, tendencies *TendencyResponse) *types.ActionTendencies {

@@ -65,6 +65,7 @@ func NewEnneagramSetFromYAML(yml map[string]interface{}) simulator.SimulationSet
 		d,
 		yml["topic"].(string),
 		yml["category"].(string),
+		yml["depth"].(int),
 	)
 
 	return es

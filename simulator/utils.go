@@ -14,7 +14,7 @@ func FillValidVotes(num int) []types.VoteType {
 	return votes
 }
 
-func FillInalidVotes(num int) []types.VoteType {
+func FillInvalidVotes(num int) []types.VoteType {
 	var votes []types.VoteType
 	for i := 0; i < num; i++ {
 		votes = append(votes, types.InvalidVoteType)
@@ -42,6 +42,17 @@ func FillAllVotes(valNum, invalNum, abstainNum int) []types.VoteType {
 		votes = append(votes, types.AbstainVoteType)
 	}
 	return votes
+}
+
+func FillReports(reports int) []*types.Report {
+	var r []*types.Report
+	for i := 0; i < reports; i++ {
+		r = append(r, &types.Report{
+			ReportedId: "reported",
+			Reason:     types.ReasonHarmfulToOthers,
+		})
+	}
+	return r
 }
 
 func MakeNewReport(reason types.Reason, rId string) types.Report {

@@ -141,7 +141,7 @@ func (r *Response) GetResponse() (neo4j.TransactionWork, error) {
 
 func (r *Response) AddResponseOnDebate(t *Tree) (neo4j.TransactionWork, error) {
 	return func(tx neo4j.Transaction) (interface{}, error) {
-		res, err := tx.Run("MATCH (t:Tree {id: $debateId}), (r:Response {id: $responseId}) CREATE (d)-[:RESPONSE_TO_DEBATE]->(r)",
+		res, err := tx.Run("MATCH (t:Tree {id: $debateId}), (r:Response {id: $responseId}) CREATE (r)-[:RESPONSE_TO_DEBATE]->(t)",
 			map[string]interface{}{
 				"debateId":   t.Id,
 				"responseId": r.Id,

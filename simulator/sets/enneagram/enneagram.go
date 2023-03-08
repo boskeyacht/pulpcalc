@@ -80,7 +80,7 @@ func (e *EnneagramSet) GetCategory() string {
 }
 
 func (e *EnneagramSet) RunSimulation(wg *sync.WaitGroup, cfg *types.Config, debateChan chan *simulator.Debate, errChan chan error) {
-	ticker := time.NewTicker(e.Duration)
+	ticker := time.NewTicker(time.Second)
 	users := []*types.User{}
 	stop := make(chan bool)
 	debate := &simulator.Debate{
@@ -102,15 +102,17 @@ func (e *EnneagramSet) RunSimulation(wg *sync.WaitGroup, cfg *types.Config, deba
 	// what is this user most likely to do
 	r, err := chatgpt.SendChatRequest(cfg.OpenAIClient, strings.Replace(tendencyPrompt, "THIS_TOPIC", e.Topic, 1))
 	if err != nil {
+		fmt.Println(err.Error())
+
 		errChan <- err
-		wg.Done()
 	}
 
 	tendencies := &TendencyResponse{}
 	err = json.Unmarshal([]byte(r), tendencies)
 	if err != nil {
+		fmt.Println(err.Error())
+
 		errChan <- err
-		wg.Done()
 	}
 
 	// Here, we assume that the array has a length of 9, for the 9 enneagram types,
@@ -135,8 +137,8 @@ func (e *EnneagramSet) RunSimulation(wg *sync.WaitGroup, cfg *types.Config, deba
 
 			tx, err := neo.NewUser(user.Id, user.Votes, user.Debates, user.SetData).Create()
 			if err != nil {
+				fmt.Println(err.Error())
 				errChan <- err
-				wg.Done()
 			}
 
 			res := writeOrPanic(cfg.Neo4j, tx)
@@ -160,12 +162,16 @@ func (e *EnneagramSet) RunSimulation(wg *sync.WaitGroup, cfg *types.Config, deba
 
 				res, err := chatgpt.SendChatRequest(cfg.OpenAIClient, p)
 				if err != nil {
+					fmt.Println(err.Error())
 					errChan <- err
-					wg.Done()
 				}
 
 				content := &ContentResponse{}
 				err = json.Unmarshal([]byte(res), &content)
+				if err != nil {
+					fmt.Println(err.Error())
+					errChan <- err
+				}
 
 				response := &simulator.Response{
 					Timestamp: time.Now().Unix(),
@@ -183,22 +189,23 @@ func (e *EnneagramSet) RunSimulation(wg *sync.WaitGroup, cfg *types.Config, deba
 
 				debate.Responses[response.Id] = response
 
-				resp := neo.NewResponse(response.Id, response.Content.Message, response.Confidence, response.Score, response.Timestamp, response.Engagements)
+				resp := neo.NewResponse("", response.Content.Message, response.Confidence, response.Score, response.Timestamp, response.Engagements)
 				userM := neo.NewUser(randUser.Id, nil, nil, nil)
 
 				tx, err := resp.Create()
 				if err != nil {
+					fmt.Println(err.Error())
 					errChan <- err
-					wg.Done()
 				}
 
 				res = writeOrPanic(cfg.Neo4j, tx).(string)
 				response.Id = res
+				resp.Id = res
 
 				tx, err = userM.AddUserResponseRelationship(resp)
 				if err != nil {
+					fmt.Println(err.Error())
 					errChan <- err
-					wg.Done()
 				}
 
 				writeOrPanic(cfg.Neo4j, tx)
@@ -206,16 +213,16 @@ func (e *EnneagramSet) RunSimulation(wg *sync.WaitGroup, cfg *types.Config, deba
 				debate := neo.NewTree(debate.Id, nil, "", "", 0, 0, 0, 0)
 				tx, err = resp.AddResponseOnDebate(debate)
 				if err != nil {
+					fmt.Println(err.Error())
 					errChan <- err
-					wg.Done()
 				}
 
 				writeOrPanic(cfg.Neo4j, tx)
 
 				tx, err = userM.AddUserDebateRelationship(debate)
 				if err != nil {
+					fmt.Println(err.Error())
 					errChan <- err
-					wg.Done()
 				}
 
 				writeOrPanic(cfg.Neo4j, tx)
@@ -226,9 +233,10 @@ func (e *EnneagramSet) RunSimulation(wg *sync.WaitGroup, cfg *types.Config, deba
 				fmt.Println("content ", response.Content.Message)
 				fmt.Println("score ", response.Score)
 				fmt.Println("confidence ", response.Confidence)
+				fmt.Println()
 
-				break
 			case <-stop:
+				fmt.Println("here")
 				break outer
 			}
 		}

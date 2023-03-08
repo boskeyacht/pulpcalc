@@ -6,19 +6,19 @@
 # below :) Currently the config for all sets is the same at which point the differentiating factor for
 # the simulation logic is determined by `simulation_type`.
 sets:
-    -   
-        simulation_type: "enneagram"
-        simulation_size: 100
-        distribution:
-          - 0.20
-          - 0.20
-          - 0.20
-          - 0.20
-          - 0.20
-        duration: 60
-        topic: "Does everyone need a therapist"
-        category: "Healthcare"
-        depth: 4
+    # -   
+    #     simulation_type: "enneagram"
+    #     simulation_size: 100
+    #     distribution:
+    #       - 0.20
+    #       - 0.20
+    #       - 0.20
+    #       - 0.20
+    #       - 0.20
+    #     duration: 60
+    #     topic: "Does everyone need a therapist"
+    #     category: "Healthcare"
+    #     depth: 4
     # -   
     #     simulation_type: "enneagram"
     #     simulation_size: 100

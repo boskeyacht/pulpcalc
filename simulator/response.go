@@ -104,61 +104,40 @@ func (n *Response) GetTimestamp() int64 {
 }
 
 func (n *Response) CalculateContentAttributesScore(cfg *types.Config) int {
-	var relevanceScore = 0
-	var soundnessScore = 0
-	var referencesScore = 0
-	var grammarScore = 0 // ?
-	var vocabScore = 0
-	var spellingScore = 0
-	var wordCountScore = 0
+	var cas = 0
 
-	referencesScore = (strings.Count(n.Content.Message, "https://") + strings.Count(n.Content.Message, "http://")) * types.ReferencesBonus
+	cas += (strings.Count(n.Content.Message, "https://") + strings.Count(n.Content.Message, "http://")) * types.ReferencesBonus
 
 	for _, word := range strings.Split(n.Content.Message, " ") {
 		if dict.IsMasteryWord("politics", word) {
 			n.Attributes.MasteryVocab++
 		}
 
-		vocabScore = int(types.MasteryVocabBonus * n.Attributes.MasteryVocab)
+		cas += int(types.MasteryVocabBonus * n.Attributes.MasteryVocab)
 
 		if !dict.IsWord_(word) {
 			n.Attributes.SpellingMistakes++
 		}
 
-		spellingScore = int(types.SpellingMistakesPenalty * n.Attributes.SpellingMistakes)
+		cas -= int(types.SpellingMistakesPenalty * n.Attributes.SpellingMistakes)
 	}
 
-	wordCountScore = types.LengthBonus * len(strings.Split(n.Content.Message, " "))
+	cas += types.LengthBonus * len(strings.Split(n.Content.Message, " "))
 
-	fmt.Println("relevanceScore", relevanceScore)
-	fmt.Println("soundnessScore", soundnessScore)
-	fmt.Println("referencesScore", referencesScore)
-	fmt.Println("grammarScore", grammarScore)
-	fmt.Println("vocabScore", vocabScore)
-	fmt.Println("spellingScore", spellingScore)
-	fmt.Println("wordCountScore", wordCountScore)
-
-	return relevanceScore + soundnessScore + referencesScore + grammarScore + vocabScore + spellingScore + wordCountScore
+	return cas
 }
 
 func (n *Response) CalculateEngagementAttributesScore() int {
-	// var responseScore int
-	var distancePenalty = 0
-	var timingPenalty = 0
-	var reportPenalty = 0
-	var hidePenalty = 0
-	var validBonus = 0
-	var invalidBonus = 0
-	var abstainBonus = 0
+	var eas = 0
 
 	for _, v := range n.Engagements.Votes {
 		switch v {
 		case types.ValidVoteType:
-			validBonus++
+			eas++
 		case types.InvalidVoteType:
-			invalidBonus++
+			eas++
 		case types.AbstainVoteType:
-			abstainBonus++
+			eas++
 		}
 	}
 
@@ -174,21 +153,15 @@ func (n *Response) CalculateEngagementAttributesScore() int {
 		}
 	}
 
-	reportPenalty = int((float64(hc) * types.HarmfulToOthersPenalty) + (float64(am) * types.AbuseOfPlatformPenalty))
-	timingPenalty = int(float64(n.Timestamp-n.RootTimestamp) * types.TimingPenalty)
-	hidePenalty = int(float64(n.Engagements.HideCount) * types.HidePenalty)
-	distancePenalty = int(float64(n.Content.Distance) * types.DistancePenalty)
+	if eas == 0 {
+		return 0
+	}
 
-	fmt.Println("distancePenalty", distancePenalty)
-	fmt.Println("timingPenalty", timingPenalty)
-	fmt.Println("reportPenalty", reportPenalty)
-	fmt.Println("hidePenalty", hidePenalty)
-	fmt.Println("validBonus", validBonus)
-	fmt.Println("invalidBonus", invalidBonus)
-	fmt.Println("abstainBonus", abstainBonus)
-	fmt.Println()
+	eas -= int((float64(hc) * types.HarmfulToOthersPenalty) + (float64(am) * types.AbuseOfPlatformPenalty))
+	eas -= int(float64(n.Engagements.HideCount) * types.HidePenalty)
+	eas -= int(float64(n.Content.Distance) * types.DistancePenalty)
 
-	return distancePenalty + timingPenalty + reportPenalty + hidePenalty + validBonus + invalidBonus + abstainBonus
+	return eas
 }
 
 // Calculates the score of a response, based on its action, content, vote, and confidence.

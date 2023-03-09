@@ -135,7 +135,7 @@ func (e *EnneagramSet) RunSimulation(wg *sync.WaitGroup, cfg *types.Config, deba
 				Responses: nil,
 				SetData: map[types.SimulationType]interface{}{
 					types.Enneagram: &types.EnneagramData{
-						PersonalityType: i,
+						PersonalityType: types.PersonalityType(i),
 						Tendencies:      matchUserTendency(i, tendencies),
 					},
 				},
@@ -190,6 +190,7 @@ func (e *EnneagramSet) RunSimulation(wg *sync.WaitGroup, cfg *types.Config, deba
 					Engagements: &types.Engagements{},
 					Content:     simulator.NewContent(0, content.Content),
 					Confidence:  content.Confidence,
+					Score:       types.CommentResponse.BasePoints(),
 				}
 
 				debate.Responses[response.Id] = response
@@ -219,7 +220,7 @@ func (e *EnneagramSet) RunSimulation(wg *sync.WaitGroup, cfg *types.Config, deba
 				generateEngagement(cfg, response, us, e.Depth)
 
 				score := response.CalculateContentAttributesScore(cfg) + response.CalculateEngagementAttributesScore()
-				response.Score = int64(score)
+				response.Score += int64(score)
 
 				debate := neo.NewTree(debate.Id, nil, "", "", 0, 0, 0, 0)
 				tx, err = resp.AddResponseOnDebate(debate)
@@ -301,9 +302,10 @@ func generateEngagement(cfg *types.Config, r *simulator.Response, users []*types
 		Engagements: &types.Engagements{},
 		Content:     simulator.NewContent(0, content.Content),
 		Confidence:  content.Confidence,
+		Score:       types.CommentResponse.BasePoints(),
 	}
 
-	response.Score = int64(response.CalculateContentAttributesScore(cfg))
+	response.Score += int64(response.CalculateContentAttributesScore(cfg))
 
 	vv := simulator.FillValidVotes(rand.Intn(len(users) - 1))
 	iv := simulator.FillInvalidVotes(rand.Intn((len(users) - 1) - len(vv)))

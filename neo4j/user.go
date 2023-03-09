@@ -47,7 +47,7 @@ func (u *User) Create() (neo4j.TransactionWork, error) {
 				"id":      uuid.New().String(),
 				"votes":   u.Votes,
 				"debates": u.Debates,
-				"type":    u.SetData[types.Enneagram].(*types.EnneagramData).PersonalityType,
+				"type":    u.SetData[types.Enneagram].(*types.EnneagramData).PersonalityType.String(),
 			})
 
 		if err != nil {

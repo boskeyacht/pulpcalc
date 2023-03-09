@@ -103,6 +103,10 @@ func (n *Response) GetTimestamp() int64 {
 	return n.Timestamp
 }
 
+// relevance
+// soundness
+// grammar/syntax
+// stats incuded
 func (n *Response) CalculateContentAttributesScore(cfg *types.Config) int {
 	var cas = 0
 

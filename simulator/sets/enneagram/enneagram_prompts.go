@@ -108,7 +108,7 @@ Tendency to cast a invalid vote: INVALID_VOTE_TENDENCY
 Tendency to cast a abstain vote: ABSTAIN_VOTE_TENDENCY
 Tendency to cast report a post: REPORT_TENDENCY
 Tendency to cast a hide a post: HIDE_TENDENCY
-on a social media comment that pertains to THIS_TOPIC, generate a response to the topic most like the user. Use the below schema for your answer
+on a social media comment that pertains to THIS_TOPIC, generate a response to the topic most like the user.  Provide evidence (links) when possible. Use the below schema for your answer
 ` + jsonSuffix + `
 {
 	"content": "This is a response to the topic",
@@ -121,20 +121,9 @@ Tendency to cast a invalid vote: INVALID_VOTE_TENDENCY
 Tendency to cast a abstain vote: ABSTAIN_VOTE_TENDENCY
 Tendency to cast report a post: REPORT_TENDENCY
 Tendency to cast a hide a post: HIDE_TENDENCY
-on a social media comment with THIS_CONTENT, generate a response to the comment most like the user. Use the below schema for your answer
+on a social media comment with THIS_CONTENT, generate a response to the comment most like the user. Use the below schema for your answer. Provide evidence (links) when possible.
 ` + jsonSuffix + `
 {
 	"content": "This is a response to the topic",
 	"confidence": 0.0 #This value must be <=1.0
 }`
-
-// Descroptions of each enneagram type for context in the chatGPT prompt
-var enneagramTypeOne = ``
-var enneagramTypeTwo = ``
-var enneagramTypeThree = ``
-var enneagramTypeFour = ``
-var enneagramTypeFive = ``
-var enneagramTypeSix = ``
-var enneagramTypeSeven = ``
-var enneagramTypeEight = ``
-var enneagramTypeNine = ``

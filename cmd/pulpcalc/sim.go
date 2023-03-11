@@ -104,7 +104,7 @@ var setsCmd = &cobra.Command{
 		}
 
 		if len(s) == 1 {
-			fmt.Printf("\x1b[32m%s\x1b[0m", fmt.Sprintf("Simulating 1 %s debats...\n\n", s[0].GetSimulationType().String()))
+			fmt.Printf("\x1b[32m%s\x1b[0m", fmt.Sprintf("Simulating 1 %s debate...\n\n", s[0].GetSimulationType().String()))
 		} else {
 			fmt.Printf("\x1b[32m%s\x1b[0m", fmt.Sprintf("Simulating %d debates...\n\n", len(s)))
 		}

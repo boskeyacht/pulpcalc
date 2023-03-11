@@ -6,6 +6,7 @@ import (
 
 	"github.com/baribari2/pulp-calculator/common/types"
 	dict "github.com/baribari2/pulp-calculator/dictionary"
+	"mvdan.cc/xurls/v2"
 )
 
 type Content struct {
@@ -34,7 +35,7 @@ func NewContent(distance int, message string) *Content {
 //	DistrustedReference
 //
 // Certain actions also have a score, which is the number of points accumulated by generating engagement
-// through said action.
+// through said actior.
 type Response struct {
 	// The id of this response
 	Id string `json:"id"`
@@ -80,61 +81,64 @@ type Response struct {
 }
 
 // Adds a child to the adjencey list of children responses
-func (n *Response) AddChild(child *Response) {
-	n.Children = append(n.Children, child)
+func (r *Response) AddChild(child *Response) {
+	r.Children = append(r.Children, child)
 }
 
 // Returns the children of this response
-func (n *Response) GetChildren() []*Response {
-	return n.Children
+func (r *Response) GetChildren() []*Response {
+	return r.Children
 }
 
 // Returns the Id of the parent response
-func (n *Response) GetParentId() string {
-	return n.ParentId
+func (r *Response) GetParentId() string {
+	return r.ParentId
 }
 
 // Reutrns the Id of this response
-func (n *Response) GetId() string {
-	return n.Id
+func (r *Response) GetId() string {
+	return r.Id
 }
 
-func (n *Response) GetTimestamp() int64 {
-	return n.Timestamp
+func (r *Response) GetTimestamp() int64 {
+	return r.Timestamp
 }
 
 // relevance
 // soundness
 // grammar/syntax
 // stats incuded
-func (n *Response) CalculateContentAttributesScore(cfg *types.Config) int {
+func (r *Response) CalculateContentAttributesScore(cfg *types.Config) int {
 	var cas = 0
 
-	cas += (strings.Count(n.Content.Message, "https://") + strings.Count(n.Content.Message, "http://")) * types.ReferencesBonus
+	rx := xurls.Relaxed()
+	rx.FindAllString(r.Content.Message, -1)
 
-	for _, word := range strings.Split(n.Content.Message, " ") {
+	cas += (strings.Count(r.Content.Message, "https://") + strings.Count(r.Content.Message, "http://")) * types.ReferencesBonus
+
+	for _, word := range strings.Split(r.Content.Message, " ") {
 		if dict.IsMasteryWord("politics", word) {
-			n.Attributes.MasteryVocab++
+			r.Attributes.MasteryVocab++
 		}
 
-		cas += int(types.MasteryVocabBonus * n.Attributes.MasteryVocab)
+		cas += int(types.MasteryVocabBonus * r.Attributes.MasteryVocab)
 
 		if !dict.IsWord_(word) {
-			n.Attributes.SpellingMistakes++
+			r.Attributes.SpellingMistakes++
 		}
 
-		cas -= int(types.SpellingMistakesPenalty * n.Attributes.SpellingMistakes)
+		cas -= int(types.SpellingMistakesPenalty * r.Attributes.SpellingMistakes)
 	}
 
-	cas += types.LengthBonus * len(strings.Split(n.Content.Message, " "))
+	cas += types.LengthBonus * len(strings.Split(r.Content.Message, " "))
 
 	return cas
 }
 
-func (n *Response) CalculateEngagementAttributesScore() int {
+func (r *Response) CalculateEngagementAttributesScore() int {
 	var eas = 0
 
-	for _, v := range n.Engagements.Votes {
+	for _, v := range r.Engagements.Votes {
 		switch v {
 		case types.ValidVoteType:
 			eas++
@@ -147,7 +151,7 @@ func (n *Response) CalculateEngagementAttributesScore() int {
 
 	hc := 0
 	am := 0
-	for _, report := range n.Engagements.Reports {
+	for _, report := range r.Engagements.Reports {
 		if report.Reason == types.ReasonHarmfulToOthers {
 			hc++
 		}
@@ -162,35 +166,35 @@ func (n *Response) CalculateEngagementAttributesScore() int {
 	}
 
 	eas -= int((float64(hc) * types.HarmfulToOthersPenalty) + (float64(am) * types.AbuseOfPlatformPenalty))
-	eas -= int(float64(n.Engagements.HideCount) * types.HidePenalty)
-	eas -= int(float64(n.Content.Distance) * types.DistancePenalty)
+	eas -= int(float64(r.Engagements.HideCount) * types.HidePenalty)
+	eas -= int(float64(r.Content.Distance) * types.DistancePenalty)
 
 	return eas
 }
 
 // Calculates the score of a response, based on its action, content, vote, and confidence.
-func (n *Response) CalculateScore(cfg *types.Config) (int, error) {
+func (r *Response) CalculateScore(cfg *types.Config) (int, error) {
 	// Set the score equal to the base points of the action
-	var score int = int(n.Action.BasePoints())
+	var score int = int(r.Action.BasePoints())
 
-	if n.Score != 0 {
-		score += int(n.Score)
+	if r.Score != 0 {
+		score += int(r.Score)
 	}
 
 	// If the action is a vote w/o content it's a constant - return the base value
-	if n.Action == types.ValidVote || n.Action == types.InvalidVote || n.Action == types.AbstainVote {
-		score += int(n.Action.BasePoints())
+	if r.Action == types.ValidVote || r.Action == types.InvalidVote || r.Action == types.AbstainVote {
+		score += int(r.Action.BasePoints())
 
 		return score, nil
 	}
 
 	// If the action contians content, then calculate a portion of the score based on the content
-	if n.Action == types.CommentResponse ||
-		n.Action == types.CommentReply ||
-		n.Action == types.ValidVoteWithContent ||
-		n.Action == types.InvalidVoteWithContent {
+	if r.Action == types.CommentResponse ||
+		r.Action == types.CommentReply ||
+		r.Action == types.ValidVoteWithContent ||
+		r.Action == types.InvalidVoteWithContent {
 
-		s, c, err := dict.CountCorrectAndCommonWords(cfg.DictServer, n.Content.Message)
+		s, c, err := dict.CountCorrectAndCommonWords(cfg.DictServer, r.Content.Message)
 		if err != nil {
 			return 0, err
 		}
@@ -200,7 +204,7 @@ func (n *Response) CalculateScore(cfg *types.Config) (int, error) {
 	}
 
 	// If the action has any votes, then calculate a portion of the score based on the votes
-	for _, vote := range n.Engagements.Votes {
+	for _, vote := range r.Engagements.Votes {
 		switch vote {
 		case types.ValidVoteType:
 			score += int(types.ValidVote.BasePoints())
@@ -217,7 +221,7 @@ func (n *Response) CalculateScore(cfg *types.Config) (int, error) {
 	}
 
 	// Calculate a portion of the score based on the confidence
-	score += int(n.Confidence * 100)
+	score += int(r.Confidence * 100)
 
 	// If the action has any references, then calculate a portion of the score based on the references
 

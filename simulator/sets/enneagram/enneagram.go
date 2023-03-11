@@ -13,6 +13,7 @@ import (
 	neo "github.com/baribari2/pulp-calculator/neo4j"
 	"github.com/baribari2/pulp-calculator/simulator"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"mvdan.cc/xurls/v2"
 )
 
 type EnneagramSet struct {
@@ -208,6 +209,32 @@ func (e *EnneagramSet) RunSimulation(wg *sync.WaitGroup, cfg *types.Config, deba
 				response.Id = res
 				resp.Id = res
 
+				rx := xurls.Relaxed()
+				urls := rx.FindAllString(response.Content.Message, -1)
+
+				if len(urls) > 0 {
+					for _, url := range urls {
+						ref := neo.NewReference("", false, 0, 0, url)
+
+						tx, err := ref.Create()
+						if err != nil {
+							fmt.Println(err.Error())
+							errChan <- err
+						}
+
+						res := writeOrPanic(cfg.Neo4j, tx).(string)
+						ref.Id = res
+
+						tx, err = ref.AddReferenceOnResponse(resp)
+						if err != nil {
+							fmt.Println(err.Error())
+							errChan <- err
+						}
+
+						writeOrPanic(cfg.Neo4j, tx)
+					}
+				}
+
 				tx, err = userM.AddUserResponseRelationship(resp)
 				if err != nil {
 					fmt.Println(err.Error())
@@ -248,7 +275,6 @@ func (e *EnneagramSet) RunSimulation(wg *sync.WaitGroup, cfg *types.Config, deba
 				fmt.Println()
 
 			case <-stop:
-				fmt.Println("here")
 				break outer
 			}
 		}
@@ -332,6 +358,30 @@ func generateEngagement(cfg *types.Config, r *simulator.Response, users []*types
 	res = writeOrPanic(cfg.Neo4j, tx).(string)
 	response.Id = res
 	rs.Id = res
+
+	rx := xurls.Relaxed()
+	urls := rx.FindAllString(response.Content.Message, -1)
+
+	if len(urls) > 0 {
+		for _, url := range urls {
+			ref := neo.NewReference("", false, 0, 0, url)
+
+			tx, err := ref.Create()
+			if err != nil {
+				return
+			}
+
+			res := writeOrPanic(cfg.Neo4j, tx).(string)
+			ref.Id = res
+
+			tx, err = ref.AddReferenceOnResponse(rs)
+			if err != nil {
+				return
+			}
+
+			writeOrPanic(cfg.Neo4j, tx)
+		}
+	}
 
 	fmt.Println("response ", response)
 

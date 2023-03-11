@@ -45,4 +45,5 @@ require (
 	golang.org/x/text v0.6.0 // indirect
 	google.golang.org/genproto v0.0.0-20230131230820-1c016267d619 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
+	mvdan.cc/xurls/v2 v2.4.0 // indirect
 )

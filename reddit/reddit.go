@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/baribari2/pulp-calculator/common/types"
-	"github.com/baribari2/pulp-calculator/simulator"
+	"github.com/baribari2/pulpcalc/common/types"
+	"github.com/baribari2/pulpcalc/simulator"
 	"github.com/broothie/qst"
 )
 

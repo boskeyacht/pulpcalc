@@ -9,9 +9,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/baribari2/pulp-calculator/grpc"
-	"github.com/baribari2/pulp-calculator/simulator"
-	"github.com/baribari2/pulp-calculator/simulator/sets"
+	"github.com/baribari2/pulpcalc/grpc"
+	"github.com/baribari2/pulpcalc/simulator"
+	"github.com/baribari2/pulpcalc/simulator/sets"
 	"github.com/fatih/color"
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/opts"

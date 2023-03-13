@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/baribari2/pulp-calculator/common/types"
+	"github.com/baribari2/pulpcalc/common/types"
 	"github.com/gin-gonic/gin"
 	"github.com/go-echarts/go-echarts/v2/charts"
 )

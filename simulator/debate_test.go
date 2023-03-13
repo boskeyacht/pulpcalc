@@ -5,8 +5,8 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/baribari2/pulp-calculator/common/types"
-	dict "github.com/baribari2/pulp-calculator/dictionary"
+	"github.com/baribari2/pulpcalc/common/types"
+	dict "github.com/baribari2/pulpcalc/dictionary"
 )
 
 func TestTree(t *testing.T) {

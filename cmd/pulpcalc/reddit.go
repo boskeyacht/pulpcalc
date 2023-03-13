@@ -3,7 +3,7 @@ package pulpcalc
 import (
 	"fmt"
 
-	"github.com/baribari2/pulp-calculator/reddit"
+	"github.com/baribari2/pulpcalc/reddit"
 	"github.com/spf13/cobra"
 )
 

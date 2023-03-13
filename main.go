@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	cmd "github.com/baribari2/pulp-calculator/cmd/pulpcalc"
-	"github.com/baribari2/pulp-calculator/common/types"
+	cmd "github.com/baribari2/pulpcalc/cmd/pulpcalc"
+	"github.com/baribari2/pulpcalc/common/types"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/sashabaranov/go-openai"
 	"github.com/sausheong/goreplicate"

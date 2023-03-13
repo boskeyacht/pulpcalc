@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/baribari2/pulp-calculator/common/types"
-	api "github.com/baribari2/pulp-calculator/common/types/api"
-	"github.com/baribari2/pulp-calculator/simulator"
+	"github.com/baribari2/pulpcalc/common/types"
+	api "github.com/baribari2/pulpcalc/common/types/api"
+	"github.com/baribari2/pulpcalc/simulator"
 	"github.com/gin-gonic/gin"
 	"github.com/go-echarts/go-echarts/v2/charts"
 )

@@ -1,7 +1,7 @@
 package neo4j
 
 import (
-	"github.com/baribari2/pulp-calculator/common/types"
+	"github.com/baribari2/pulpcalc/common/types"
 	"github.com/google/uuid"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j/dbtype"

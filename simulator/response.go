@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/baribari2/pulp-calculator/common/types"
-	dict "github.com/baribari2/pulp-calculator/dictionary"
+	"github.com/baribari2/pulpcalc/common/types"
+	dict "github.com/baribari2/pulpcalc/dictionary"
 	"mvdan.cc/xurls/v2"
 )
 

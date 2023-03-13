@@ -5,9 +5,9 @@ import (
 	"net"
 	"time"
 
-	"github.com/baribari2/pulp-calculator/common/types"
-	"github.com/baribari2/pulp-calculator/proto"
-	"github.com/baribari2/pulp-calculator/simulator"
+	"github.com/baribari2/pulpcalc/common/types"
+	"github.com/baribari2/pulpcalc/proto"
+	"github.com/baribari2/pulpcalc/simulator"
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"google.golang.org/grpc"
 )

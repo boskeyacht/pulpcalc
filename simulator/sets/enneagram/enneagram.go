@@ -8,10 +8,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/baribari2/pulp-calculator/chatgpt"
-	"github.com/baribari2/pulp-calculator/common/types"
-	neo "github.com/baribari2/pulp-calculator/neo4j"
-	"github.com/baribari2/pulp-calculator/simulator"
+	"github.com/baribari2/pulpcalc/chatgpt"
+	"github.com/baribari2/pulpcalc/common/types"
+	neo "github.com/baribari2/pulpcalc/neo4j"
+	"github.com/baribari2/pulpcalc/simulator"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"mvdan.cc/xurls/v2"
 )

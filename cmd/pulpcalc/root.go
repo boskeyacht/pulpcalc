@@ -1,7 +1,7 @@
 package pulpcalc
 
 import (
-	"github.com/baribari2/pulp-calculator/common/types"
+	"github.com/baribari2/pulpcalc/common/types"
 	"github.com/spf13/cobra"
 )
 

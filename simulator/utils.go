@@ -3,7 +3,7 @@ package simulator
 import (
 	"math/rand"
 
-	"github.com/baribari2/pulp-calculator/common/types"
+	"github.com/baribari2/pulpcalc/common/types"
 )
 
 func FillValidVotes(num int) []types.VoteType {

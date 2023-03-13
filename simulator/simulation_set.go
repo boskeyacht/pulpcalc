@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/baribari2/pulp-calculator/common/types"
+	"github.com/baribari2/pulpcalc/common/types"
 )
 
 // The main data structure for a simulation, this is an interface so that a debate can be simulated for various

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"log"
 
-	types "github.com/baribari2/pulp-calculator/common/types/twitter"
+	types "github.com/baribari2/pulpcalc/common/types/twitter"
 	"github.com/broothie/qst"
 )
 

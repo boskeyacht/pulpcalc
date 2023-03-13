@@ -1,6 +1,6 @@
 package enneagram
 
-import "github.com/baribari2/pulp-calculator/common/types"
+import "github.com/baribari2/pulpcalc/common/types"
 
 type TendencyResponse struct {
 	Type1 *types.ActionTendencies `json:"type1"`

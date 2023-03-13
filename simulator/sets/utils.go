@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/baribari2/pulp-calculator/simulator"
-	"github.com/baribari2/pulp-calculator/simulator/sets/enneagram"
+	"github.com/baribari2/pulpcalc/simulator"
+	"github.com/baribari2/pulpcalc/simulator/sets/enneagram"
 	"gopkg.in/yaml.v3"
 )
 

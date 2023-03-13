@@ -9,9 +9,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/baribari2/pulp-calculator/common/types"
-	dict "github.com/baribari2/pulp-calculator/dictionary"
-	neo "github.com/baribari2/pulp-calculator/neo4j"
+	"github.com/baribari2/pulpcalc/common/types"
+	dict "github.com/baribari2/pulpcalc/dictionary"
+	neo "github.com/baribari2/pulpcalc/neo4j"
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/opts"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
